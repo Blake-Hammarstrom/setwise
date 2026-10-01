@@ -22,8 +22,8 @@ const DAYS = {
   full: { name: "Full body", focus: [...UPPER, ...LOWER], assist: [] },
   upper: { name: "Upper", focus: UPPER, assist: [] },
   lower: { name: "Lower", focus: LOWER, assist: [] },
-  push: { name: "Push", focus: ["chest", "frontDelts", "sideDelts", "triceps"], assist: ["abs"] },
-  pull: { name: "Pull", focus: ["lats", "upperBack", "rearDelts", "biceps"], assist: ["abs"] },
+  push: { name: "Push", focus: ["chest", "frontDelts", "sideDelts", "triceps"], assist: [] },
+  pull: { name: "Pull", focus: ["lats", "upperBack", "rearDelts", "biceps"], assist: [] },
   legs: { name: "Legs", focus: ["quads", "hamstrings", "glutes", "calves", "abs"], assist: [] },
   chestDay: { name: "Chest", focus: ["chest"], assist: ["triceps", "frontDelts", "abs"] },
   backDay: { name: "Back", focus: ["lats", "upperBack"], assist: ["biceps", "rearDelts"] },
@@ -53,7 +53,7 @@ function hash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Ma
  */
 export function planWeek(p) {
   const T = targets(p.experience), block = p.block ?? 0, skip = new Set(p.skip || []);
-  const dayKeys = SPLITS[p.split]?.days[p.days];
+  const dayKeys = p.dayKeys || SPLITS[p.split]?.days[p.days]; // dayKeys: an explicit day sequence (routine builder)
   if (!dayKeys) throw new Error(`${SPLITS[p.split]?.label || p.split} isn't offered with ${p.days} days a week`);
   const pool = EXERCISES.filter((e) => available(e, p.equipment) && !skip.has(e.id));
   // Weekly aim: 40% into the range (comfortably above the minimum, well under the maximum).
@@ -179,6 +179,41 @@ const rank = (e) => (e.tier === "main" ? 0 : e.kind === "compound" ? 1 : 2);
 
 export const profileEquipment = (profile, custom) => (profile === "home" && custom ? custom : PROFILES[profile].equipment);
 export { DAYS };
+
+/**
+ * Day templates for the routine builder. `perWeek` is how often that day type usually comes round, which sets how much
+ * of each muscle's weekly aim one session carries (a push day done twice a week carries half the chest work).
+ */
+export const DAY_TEMPLATES = [
+  { key: "push", label: "Push", hint: "Chest, shoulders, triceps", perWeek: 2 },
+  { key: "pull", label: "Pull", hint: "Back, rear delts, biceps", perWeek: 2 },
+  { key: "legs", label: "Legs", hint: "Quads, hamstrings, glutes, calves, abs", perWeek: 2 },
+  { key: "upper", label: "Upper", hint: "Chest, back, shoulders, arms", perWeek: 2 },
+  { key: "lower", label: "Lower", hint: "Legs and abs", perWeek: 2 },
+  { key: "full", label: "Full body", hint: "A bit of everything", perWeek: 3 },
+  { key: "chestDay", label: "Chest", hint: "Chest, plus triceps", perWeek: 1 },
+  { key: "backDay", label: "Back", hint: "Lats and upper back, plus biceps", perWeek: 1 },
+  { key: "shoulderDay", label: "Shoulders", hint: "All three delt heads", perWeek: 1 },
+  { key: "armDay", label: "Arms", hint: "Biceps and triceps", perWeek: 1 },
+  { key: "legDay", label: "Legs (body-part)", hint: "Quads, hamstrings, glutes, calves", perWeek: 1 },
+];
+
+/** One generated day of a given type, for this profile's equipment, experience and session length. */
+export function planDay(key, p, variant = 0) {
+  const t = DAY_TEMPLATES.find((d) => d.key === key);
+  if (!t) throw new Error(`unknown day type: ${key}`);
+  const w = planWeek({ ...p, dayKeys: Array(t.perWeek).fill(key), block: variant });
+  // Variant k takes the k-th session when a type repeats, so "Push" added twice gets Push A and Push B.
+  return { name: t.label, template: key, items: w.sessions[variant % w.sessions.length].items.map(({ id, sets, reps }) => ({ id, sets, reps: [...reps] })) };
+}
+
+/** Starting points for "build my own": whole splits as editable days. */
+export const QUICK_STARTS = [
+  { label: "Push / Pull / Legs", days: ["push", "pull", "legs"] },
+  { label: "Upper / Lower", days: ["upper", "lower"] },
+  { label: "Full body", days: ["full", "full", "full"] },
+  { label: "Body-part split", days: ["chestDay", "backDay", "legDay", "shoulderDay", "armDay"] },
+];
 
 /** Fit advisor: nearby setups (same equipment and experience) whose plan meets every minimum. */
 export function suggestFits(p) {

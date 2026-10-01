@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BY_ID, PROFILES } from "../src/engine/exercises.js";
-import { planWeek, targets } from "../src/engine/generator.js";
+import { BY_ID, PROFILES, available } from "../src/engine/exercises.js";
+import { QUICK_STARTS, planDay, planWeek, targets } from "../src/engine/generator.js";
 import { alternatives, applySwaps, coverage, makeCustomExercise, platesPerSide, registerCustom, routineFromPlan, searchExercises, warmups } from "../src/engine/routine.js";
 
 const eq = PROFILES.commercial.equipment;
@@ -58,4 +58,17 @@ test("plates per side and warm-ups", () => {
   assert.deepEqual(platesPerSide(100, "kg").plates, [25, 15]);
   assert.deepEqual(warmups(225, 5, 45).map((s) => s.w), [90, 135, 180]);
   assert.deepEqual(warmups(95, 5, 45).map((s) => s.w), [55, 75]);
+});
+
+test("day templates: each fills a day with direct work for its focus, for the given equipment; repeats differ", () => {
+  const p = { equipment: PROFILES.home.equipment, experience: "intermediate", minutes: 60 };
+  const push = planDay("push", p);
+  assert.equal(push.template, "push");
+  assert.ok(push.items.length >= 3);
+  assert.ok(push.items.some((i) => BY_ID[i.id].primary.includes("triceps")), "push has direct triceps");
+  assert.ok(push.items.every((i) => available(BY_ID[i.id], p.equipment)));
+  assert.ok(planDay("pull", p).items.some((i) => BY_ID[i.id].primary.includes("biceps")), "pull has direct biceps");
+  const a = planDay("full", p, 0).items.map((i) => i.id).join(), b = planDay("full", p, 1).items.map((i) => i.id).join();
+  assert.notEqual(a, b, "Full body A and B differ");
+  for (const q of QUICK_STARTS) for (const k of q.days) assert.ok(planDay(k, p).items.length, `${q.label}: ${k} filled`);
 });

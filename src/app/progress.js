@@ -59,7 +59,7 @@ export function plan(app) {
   const days = sessionsOf(s), next = nextIndex(s, days.length);
   app.innerHTML = `<h1>${s.routine ? "Your routine" : "Your plan"}</h1>
   <p class="lede">${days.length} day${days.length === 1 ? "" : "s"} in rotation · ${s.profile.days} days a week${s.routine ? "" : " · exercises refresh every 4 weeks, main lifts every 8"}</p>
-  <div class="row"><a class="btn" href="#/routine" id="edit">${s.routine ? "Edit routine" : "Customize this plan"}</a></div>
+  <div class="row"><a class="btn" href="#/routine" id="edit">${s.routine ? "Edit routine" : "Customize this plan"}</a><a class="btn ghost" href="#/import">Paste, photo or speak a routine</a></div>
   ${days.map((d, i) => `<section class="card"><h2>${i === next ? "Next · " : ""}${esc(d.name)}</h2><table>${d.items.map((it) => `<tr><td>${esc(exName(it.id))}</td><td class="num">${it.sets} × ${it.reps[0]}–${it.reps[1]}</td></tr>`).join("")}</table></section>`).join("")}`;
   $("#edit", app).onclick = (e) => {
     if (s.routine) return;

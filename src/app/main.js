@@ -1,4 +1,5 @@
 // Setwise: router + service worker. Everything runs and stays in this browser.
+import { importer } from "./import.js";
 import { onboarding } from "./onboarding.js";
 import { plan, progress } from "./progress.js";
 import { routineEditor } from "./routine-editor.js";
@@ -17,8 +18,8 @@ function route() {
   const r = !s.profile ? "setup" : want || "today";
   closeSheet();
   if (r !== "today") leaveToday();
-  $("#nav").innerHTML = s.profile && r !== "setup" ? TABS.map(([k, l]) => `<a href="#/${k}" class="${r === k || (r === "routine" && k === "plan") ? "on" : ""}">${l}</a>`).join("") : "";
-  ({ setup: () => onboarding(app, go), today: () => today(app, go), plan: () => plan(app), routine: () => routineEditor(app, go), progress: () => progress(app), settings: () => settings(app, go) }[r] || (() => today(app, go)))();
+  $("#nav").innerHTML = s.profile && r !== "setup" ? TABS.map(([k, l]) => `<a href="#/${k}" class="${r === k || ((r === "routine" || r === "import") && k === "plan") ? "on" : ""}">${l}</a>`).join("") : "";
+  ({ setup: () => onboarding(app, go), today: () => today(app, go), plan: () => plan(app), routine: () => routineEditor(app, go), import: () => importer(app, go), progress: () => progress(app), settings: () => settings(app, go) }[r] || (() => today(app, go)))();
   window.scrollTo({ top: 0 });
 }
 addEventListener("hashchange", route);

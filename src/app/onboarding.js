@@ -19,12 +19,12 @@ export function onboarding(app, done) {
     experience: prev.experience || "intermediate", units: prev.units || defaultUnits(), swaps: prev.swaps || {} };
   let step = 1;
 
-  const finish = (split, routine = null) => {
+  const finish = (split, routine = null, then = null) => {
     const s = load();
     s.profile = { ...p, split: routine ? "custom" : split };
     s.routine = routine;
     s.startedAt ||= new Date().toISOString(); s.logs ||= []; delete s.draft;
-    save(s); done(routine ? "routine" : "today"); // your own routine opens in the editor
+    save(s); done(then || (routine ? "routine" : "today")); // your own routine opens in the editor (or the importer)
   };
 
   const draw = () => {
@@ -59,15 +59,17 @@ export function onboarding(app, done) {
             <span class="rc-days">${esc(dayNames(k, p.days))}</span>
             <span class="rc-cov ${w.shortfalls.length ? "warn" : "ok"}">${w.shortfalls.length ? `Short on ${w.shortfalls.slice(0, 3).map((x) => MUSCLE_NAMES[x.muscle].toLowerCase()).join(", ")}${w.shortfalls.length > 3 ? "…" : ""} (${why(w.shortfalls[0].reasons)})` : "✓ Covers every muscle"}</span>
           </button>
-          <button class="btn small ghost" data-custom-from="${k}">Customize</button>
+          <button class="btn small ghost" data-custom-from="${k}">Edit exercises</button>
         </div>`).join("")}
-        <div class="routine-card"><button class="routine-pick" data-own><span class="rc-top"><b>Build my own</b></span><span class="rc-days">Your days, your exercises. Progression and tracking work the same.</span></button></div>
+        <div class="routine-card"><button class="routine-pick" data-paste><span class="rc-top"><b>I already have a routine</b></span><span class="rc-days">Paste it, copy it from a photo, or say it out loud.</span></button></div>
+        <div class="routine-card"><button class="routine-pick" data-own><span class="rc-top"><b>Build my own</b></span><span class="rc-days">Start from Push, Pull, Legs or any day type, then change any exercise.</span></button></div>
       </div>
       <p class="small faint mt">Defaults: ${esc(p.experience)} · ${p.units}. Change anytime in Settings.</p>`;
       $$("[data-min]", app).forEach((b) => (b.onclick = () => { p.minutes = Number(b.dataset.min); draw(); }));
       $$("[data-split]", app).forEach((b) => (b.onclick = () => { finish(b.dataset.split); toast("Your first session is ready."); }));
       $$("[data-custom-from]", app).forEach((b) => (b.onclick = () => finish(null, routineFromPlan(planWeek({ ...p, split: b.dataset.customFrom })))));
-      $("[data-own]", app).onclick = () => finish(null, { days: Array.from({ length: p.days }, (_, i) => ({ name: `Day ${i + 1}`, items: [] })) });
+      $("[data-own]", app).onclick = () => finish(null, { days: [] }); // the builder opens on its starting points
+      $("[data-paste]", app).onclick = () => finish(null, { days: [] }, "import");
     }
     const back = $("[data-back]", app);
     if (back) back.onclick = () => { step -= 1; draw(); };

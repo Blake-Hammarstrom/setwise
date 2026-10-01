@@ -21,7 +21,7 @@ export function makeCustomExercise({ name, primary = [], secondary = [], load = 
     pattern: `custom-${primary[0]}`, load, lower: !!lower, tier: "accessory", reps: [lo, hi], kind: primary.length + secondary.length > 1 ? "compound" : "isolation" };
 }
 
-export const routineFromPlan = (plan) => ({ days: plan.sessions.map((s) => ({ name: s.name, items: s.items.map(({ id, sets, reps }) => ({ id, sets, reps: [...reps] })) })) });
+export const routineFromPlan = (plan) => ({ days: plan.sessions.map((s) => ({ name: s.name, template: s.day, items: s.items.map(({ id, sets, reps }) => ({ id, sets, reps: [...reps] })) })) });
 
 /** Apply the user's permanent swaps to a generated plan's sessions (a swap is ignored if its exercise isn't available). */
 export function applySwaps(sessions, swaps = {}, equipment = []) {

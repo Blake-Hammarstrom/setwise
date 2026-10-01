@@ -2,7 +2,11 @@
 
 Daily workouts built for **your** equipment and routine: every muscle covered each week, next weights set from your last session, honest progress. Local-first and installable: your log never leaves the device, and it works offline at the gym.
 
-**Setup in three taps:** where you train → days a week → pick a routine (each card shows whether it covers every muscle) or build your own.
+**Setup in three taps:** where you train → days a week → pick a routine. Each card shows whether it covers every muscle.
+
+Or bring your own:
+- **Paste, photo or speak it.** Copy text from a photo with the phone's Live Text, or dictate it. A deterministic parser handles headings, `3x8`/`4 sets of 6-8`, abbreviations (db, ohp, rdl) and number words, and flags anything it isn't sure about for you to pick.
+- **Build it from day templates.** Push, Pull, Legs, Upper, Lower, Full body or body-part days, each pre-filled for your equipment, then edited.
 
 **In the gym:**
 - reps and weights prefilled, so a set is one tap

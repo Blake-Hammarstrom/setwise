@@ -8,14 +8,14 @@ const needs = (ex) => ex.equipment.filter((e) => e !== "floor").map((e) => EQUIP
 const row = (ex, ok) => `<button class="pick-row ${ok ? "" : "dim"}" data-pick="${esc(ex.id)}"><b>${esc(ex.name)}</b><span>${ex.primary.map((m) => MUSCLE_NAMES[m]).join(", ")}${ex.secondary.length ? ` · also ${ex.secondary.map((m) => MUSCLE_NAMES[m].toLowerCase()).join(", ")}` : ""}${ok ? "" : ` · needs ${esc(needs(ex))}`}${ex.custom ? " · yours" : ""}</span></button>`;
 
 /**
- * @param {{title:string, swapFor?:string, muscle?:string, exclude?:string[], onPick:(id:string)=>void}} o
+ * @param {{title:string, swapFor?:string, muscle?:string, query?:string, exclude?:string[], onPick:(id:string)=>void}} o
  *   swapFor: show like-for-like alternatives to this exercise first. exclude: ids already in the session/day.
  */
 export function openPicker(o) {
   const s = load(), eq = s.profile.equipment, customs = s.customExercises || [];
-  let q = "", muscle = o.muscle || "";
+  let q = o.query || "", muscle = o.muscle || "";
   const body = sheet(o.title, `
-    <input type="search" id="pk-q" placeholder="Search exercises" autocomplete="off" aria-label="Search exercises">
+    <input type="search" id="pk-q" placeholder="Search exercises" autocomplete="off" aria-label="Search exercises" value="${esc(q)}">
     <div class="chips scroll mt-s" role="group" aria-label="Filter by muscle"><button class="chip ${!muscle ? "on" : ""}" data-m="">All</button>${MUSCLES.map((m) => `<button class="chip ${muscle === m ? "on" : ""}" data-m="${m}">${MUSCLE_NAMES[m]}</button>`).join("")}</div>
     <div id="pk-list" class="pick-list"></div>
     <button class="btn ghost small mt" id="pk-new">＋ Create my own exercise</button>`);
