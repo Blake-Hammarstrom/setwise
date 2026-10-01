@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Local-first: your plan and your training log live in this browser. The app may not connect anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Setwise · Every muscle, every week</title>
+<meta name="description" content="Daily workouts built for your equipment and split that cover every muscle, set your next weights from your last session, and track progress honestly. Private.">
+<meta name="theme-color" content="#111214">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <a href="#/today" class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="9" width="3" height="6" rx="1"/><rect x="5" y="7" width="3" height="10" rx="1"/><rect x="16" y="7" width="3" height="10" rx="1"/><rect x="19" y="9" width="3" height="6" rx="1"/><rect x="8" y="11" width="8" height="2"/></svg>Setwise</a>
+  <nav id="nav"></nav>
+</header>
+<main id="app" aria-live="polite"></main>
+<div id="toast" role="status"></div>
+<script type="module" src="app/main.js"></script>
+</body>
+</html>
