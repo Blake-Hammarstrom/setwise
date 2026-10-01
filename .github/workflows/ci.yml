@@ -1,4 +1,4 @@
-# Tests + the exhaustive generator verification on every push. CI fails if G1, G3, G4, G5 or G6 regress.
+# Tests + the exhaustive generator verification on every push. CI fails if G1 or G3–G7 regress.
 # (G2 is a known, documented NOT MET: docs/VERIFICATION_PROTOCOL.md.)
 name: ci
 on: [push, pull_request]
@@ -13,5 +13,5 @@ jobs:
         with: { node-version: 22 }
       - run: npm test
       - name: Generator invariants (exhaustive)
-        run: node scripts/verify.mjs --write && node -e "const c=require('./reports/verification.json').criteria; for (const k of ['G1','G3','G4','G5','G6']) if (!c[k].met) { console.error(k+' regressed'); process.exit(1) }"
+        run: node scripts/verify.mjs --write && node -e "const c=require('./reports/verification.json').criteria; for (const k of ['G1','G3','G4','G5','G6','G7']) if (!c[k].met) { console.error(k+' regressed'); process.exit(1) }"
       - run: npm run build

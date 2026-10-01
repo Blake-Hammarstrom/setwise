@@ -102,6 +102,28 @@ export function planWeek(p) {
 
   // Pass 2: accessories, with every share scaled to the time left.
   S.forEach((s, i) => {
+    // Direct work first (amendment 1, G7): every muscle the day is FOR gets at least one exercise that trains it as a
+    // primary mover, e.g. triceps on push day even when pressing already credits them. Most specific exercise wins.
+    // Full-body days (13 focus muscles) spread direct work across the week instead (amendment 2): muscle k gets it in
+    // the full-body session k mod n, so every muscle still gets direct work weekly without crowding out compounds.
+    const fullIdx = S.slice(0, i + 1).filter((x) => x.day === "full").length - 1, nFull = S.filter((x) => x.day === "full").length;
+    for (const [k, m] of DAYS[s.day].focus.entries()) {
+      // Assigned here, or assigned to an earlier full-body session that couldn't fit it (carried over).
+      const directEarlier = S.slice(0, i).some((x) => x.items.some((it) => BY_ID[it.id].primary.includes(m)));
+      if (s.day === "full" && k % nFull !== fullIdx && !(k % nFull < fullIdx && !directEarlier)) continue;
+      if (!T[m][0] || s.items.some((it) => BY_ID[it.id].primary.includes(m))) continue;
+      let best = null;
+      for (const ex of pool) {
+        if (!ex.primary.includes(m) || s.items.some((it) => it.id === ex.id) || !fits(s, credit(ex), 2)) continue;
+        const score = -ex.primary.length - 0.5 * ex.secondary.length + loaded(ex) + (used.has(ex.id) ? -0.05 : 0) + tie(ex, s.day);
+        if (!best || score > best.score) best = { ex, score };
+      }
+      if (!best) continue;
+      if (s.time + 2 * setMinutes(best.ex) > p.minutes) { limits[m].add("time"); continue; }
+      let sets = Math.max(2, Math.min(3, Math.round(share(m, i) - s.per[m])));
+      while (sets > 2 && (!fits(s, credit(best.ex), sets) || s.time + sets * setMinutes(best.ex) > p.minutes)) sets--;
+      add(s, best.ex, sets, "accessory");
+    }
     const need0 = Object.fromEntries(MUSCLES.map((m) => [m, Math.max(0, share(m, i) - s.per[m])]));
     const neededMin = MUSCLES.reduce((t, m) => t + need0[m], 0) * 2.1; // ~2.1 min per credited set (mixed exercises)
     const scale = Math.min(1, Math.max(0, p.minutes - s.time) / Math.max(1, neededMin));

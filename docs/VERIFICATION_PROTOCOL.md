@@ -64,3 +64,25 @@ Fixed 2026-10-01, **before the generator was written.** These rules don't change
 - a **fit advisor** suggests the nearest setups (split, ±1 day, +15 min) that meet every minimum
 
 **Remaining generator-only misses:** 1 configuration (commercial / 3-day PPL / advanced / 90 min: rear delts 6.5 of 7).
+
+## Amendment 1 (2026-10-01, from Blake's first use, written BEFORE G7 was run)
+**Feedback:** "for PPL need triceps in there". Push days could leave triceps to indirect credit from pressing (fractional sets), and the same could happen to biceps on pull days. That's technically within volume targets, but not what a lifter expects from a push day.
+
+| Id | New invariant | Met if |
+|---|---|---|
+| G7 | **Direct work:** in every session, each muscle the day is *for* (its focus list, minimum > 0) gets at least one exercise that trains it as a primary mover. Exempt when no available exercise trains it, or when the session has no room for 2 more sets of it (time budget or ceilings) | 0 violations across all 384 configurations |
+
+G1–G6 are unchanged and re-checked.
+
+**Run (amendment 1 as written): G7 met, but G2 misses rose from 114 to 139.**
+- Requiring direct work for all 13 focus muscles of *every full-body session* spent the time budget on 2-set fillers instead of efficient compound lifts.
+
+## Amendment 2 (2026-10-01, after the run above; G7's scope changed for full-body days only, so both runs are recorded)
+**The change:**
+- **Full-body days:** direct work is required **weekly**. Muscle k is assigned to full-body session k mod n; a muscle that doesn't fit there carries over to the next full-body session.
+- **Every other day type** (push, pull, legs, upper, lower, body-part) keeps the per-session rule, so **triceps on push day and biceps on pull day are always direct.**
+- **The exemption is unchanged:** "no room" means time, the per-session ceiling, or the weekly maximum (G5), consistently.
+
+**Result (`reports/verification.md`): G1, G3, G4, G5, G6 and G7 MET; G2 NOT MET (130).**
+- By stated reason: time budget 68 · structural 54 · equipment variety 3 · selection 5.
+- **The honest tradeoff:** direct work costs 16 configurations of weekly coverage (114 → 130). It was accepted because it's what a lifter expects from a push or pull day; the user's requirement outranks the volume aim.

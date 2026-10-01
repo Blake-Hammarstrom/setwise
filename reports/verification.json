@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-10-01T21:33:00.409Z",
+  "ranAt": "2026-10-01T21:53:06.314Z",
   "configurations": 384,
   "g2Eligible": 216,
   "criteria": {
@@ -9,21 +9,21 @@
       "examples": []
     },
     "G2": {
-      "violations": 114,
+      "violations": 130,
       "met": false,
       "examples": [
-        "commercial/fullBody/2d/beginner/60min: chest 6/8, sideDelts 4/7, triceps 4/6, hamstrings 6.5/7, abs 2/4",
-        "commercial/fullBody/2d/beginner/75min: sideDelts 6/7",
-        "commercial/fullBody/2d/intermediate/60min: chest 4/12, sideDelts 4/10, rearDelts 5/6, biceps 5/8, triceps 4/8, hamstrings 6/10, calves 4/6, abs 4/6",
-        "commercial/fullBody/2d/intermediate/75min: chest 10/12, sideDelts 7.5/10, biceps 6/8, triceps 6/8, hamstrings 7/10, calves 4/6, abs 4/6",
-        "commercial/fullBody/2d/intermediate/90min: sideDelts 7/10, hamstrings 7/10, calves 4/6, abs 4/6",
-        "commercial/fullBody/2d/advanced/60min: chest 4/14, lats 10/12, upperBack 10/12, sideDelts 4/12, rearDelts 5/7, biceps 5/10, triceps 4/10, quads 12/14, hamstrings 6/12, calves 4/7, abs 4/7",
-        "commercial/fullBody/2d/advanced/75min: chest 8/14, sideDelts 6/12, biceps 8/10, triceps 4/10, hamstrings 7/12, calves 4/7, abs 4/7",
-        "commercial/fullBody/2d/advanced/90min: chest 12/14, sideDelts 8.5/12, triceps 7/10, hamstrings 7/12, calves 4/7, abs 4/7",
-        "commercial/fullBody/3d/intermediate/60min: chest 10/12, sideDelts 6/10, triceps 6/8, abs 4/6",
-        "commercial/fullBody/3d/advanced/60min: chest 7/14, sideDelts 6/12, biceps 7.5/10, triceps 5.5/10, hamstrings 9.5/12, calves 6/7, abs 6/7",
-        "commercial/fullBody/3d/advanced/75min: sideDelts 9/12, biceps 9/10, hamstrings 10.5/12, calves 6/7, abs 6/7",
-        "commercial/fullBody/3d/advanced/90min: calves 6/7, abs 6/7"
+        "commercial/fullBody/2d/beginner/60min: chest 7/8, sideDelts 5/7, quads 6/8, hamstrings 6/7, calves 3/4, abs 3/4",
+        "commercial/fullBody/2d/beginner/75min: abs 3/4",
+        "commercial/fullBody/2d/intermediate/60min: chest 5/12, lats 9/10, sideDelts 3/10, biceps 7.5/8, triceps 4/8, quads 6/12, hamstrings 6/10, glutes 6/8, calves 3/6, abs 3/6",
+        "commercial/fullBody/2d/intermediate/75min: chest 7/12, sideDelts 5/10, triceps 6/8, quads 9/12, hamstrings 9/10, calves 5/6, abs 5/6",
+        "commercial/fullBody/2d/intermediate/90min: chest 10/12, sideDelts 8/10, hamstrings 9/10, calves 5/6, abs 5/6",
+        "commercial/fullBody/2d/advanced/60min: chest 3/14, sideDelts 3/12, biceps 9/10, triceps 3/10, quads 6/14, hamstrings 6/12, glutes 6/10, calves 3/7, abs 3/7",
+        "commercial/fullBody/2d/advanced/75min: chest 7/14, lats 10/12, upperBack 10.5/12, sideDelts 7/12, biceps 9/10, triceps 6/10, quads 10/14, hamstrings 8/12, calves 5/7, abs 5/7",
+        "commercial/fullBody/2d/advanced/90min: chest 10/14, sideDelts 7/12, triceps 9/10, quads 12/14, hamstrings 9/12, calves 5/7, abs 5/7",
+        "commercial/fullBody/3d/intermediate/60min: chest 9/12, sideDelts 7/10, calves 5/6, abs 5/6",
+        "commercial/fullBody/3d/intermediate/75min: sideDelts 8.5/10, calves 5/6",
+        "commercial/fullBody/3d/advanced/60min: chest 7/14, sideDelts 6/12, triceps 7/10, quads 12/14, hamstrings 10.5/12, calves 3/7, abs 5/7",
+        "commercial/fullBody/3d/advanced/75min: chest 12/14, sideDelts 10/12, triceps 8.5/10"
       ]
     },
     "G3": {
@@ -45,28 +45,35 @@
       "violations": 0,
       "met": true,
       "examples": []
+    },
+    "G7": {
+      "violations": 0,
+      "met": true,
+      "examples": []
     }
   },
   "reported": {
     "g2MissesByReason": {
-      "time budget": 60,
-      "structural: split trains a muscle once a week, minimum > per-session ceiling": 54
+      "time budget": 68,
+      "structural: split trains a muscle once a week, minimum > per-session ceiling": 54,
+      "selection": 5,
+      "equipment variety (one exercise trains this with your kit)": 3
     },
     "g2ProvablyInfeasible": 0,
-    "coverageAt45": "7/96",
+    "coverageAt45": "8/96",
     "bodyweightShortfalls": {
-      "chest": 32,
-      "lats": 35,
-      "upperBack": 21,
-      "sideDelts": 94,
+      "chest": 42,
+      "lats": 32,
+      "sideDelts": 96,
+      "biceps": 30,
       "triceps": 29,
-      "quads": 45,
-      "calves": 48,
-      "abs": 29,
-      "biceps": 27,
-      "hamstrings": 44,
-      "rearDelts": 5,
-      "glutes": 7
+      "quads": 49,
+      "hamstrings": 41,
+      "calves": 64,
+      "abs": 31,
+      "upperBack": 22,
+      "rearDelts": 15,
+      "glutes": 20
     }
   }
 }

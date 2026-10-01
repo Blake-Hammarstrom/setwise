@@ -11,7 +11,7 @@ for (const profile of Object.keys(PROFILES))
       for (const experience of ["beginner", "intermediate", "advanced"])
         for (const minutes of [45, 60, 75, 90]) configs.push({ profile, split, days, experience, minutes, equipment: PROFILES[profile].equipment });
 
-const v = { G1: [], G2: [], G3: [], G4: [], G5: [], G6: [] };
+const v = { G1: [], G2: [], G3: [], G4: [], G5: [], G6: [], G7: [] };
 // Time-feasibility LOWER bound: every set takes ≥ 2 min and credits at most the best useful amount any available
 // exercise gives (muscles with a minimum > 0, primary 1 + secondary 0.5). If even that can't fit, no plan can.
 import { targets as tg } from "../src/engine/generator.js";
@@ -43,6 +43,21 @@ for (const c of configs) {
       for (const [m, k] of Object.entries(credit(ex))) per[m] += k * it.sets;
     }
     for (const m of MUSCLES) if (per[m] > SESSION_CAP + 1e-9) v.G4.push(`${key} ${s.name}: ${m} ${per[m]}`);
+    // G7: direct work for every focus muscle, unless impossible (no exercise) or no room (time/ceilings).
+    // Full-body days: direct work is required weekly, not per session (amendment 2): checked after the loop.
+    for (const m of s.day === "full" ? [] : DAYS[s.day].focus) {
+      if (!w.targets[m][0] || s.items.some((i) => BY_ID[i.id].primary.includes(m))) continue;
+      const cands = Object.values(BY_ID).filter((e) => e.primary.includes(m) && available(e, c.equipment));
+      const room = cands.some((e) => s.minutes + 4 <= c.minutes && Object.entries(credit(e)).every(([q, k]) => per[q] + 2 * k <= SESSION_CAP && w.weekly[q] + 2 * k <= w.targets[q][1] + 2));
+      if (cands.length && room) v.G7.push(`${key} ${s.name}: no direct ${m}`);
+    }
+  }
+  if (c.split === "fullBody") for (const m of MUSCLES) {
+    if (!w.targets[m][0] || w.sessions.some((s) => s.items.some((i) => BY_ID[i.id].primary.includes(m)))) continue;
+    const cands = Object.values(BY_ID).filter((e) => e.primary.includes(m) && available(e, c.equipment));
+    // Same exemption as per session: no room (time, or the weekly maximum G5) for 2 more sets of any candidate.
+    const room = cands.some((e) => Object.entries(credit(e)).every(([q, k]) => w.weekly[q] + 2 * k <= w.targets[q][1] + 2)) && w.sessions.some((s) => s.minutes + 4 <= c.minutes);
+    if (cands.length && room) v.G7.push(`${key}: no direct ${m} all week`);
   }
   const short = MUSCLES.filter((m) => w.weekly[m] < w.targets[m][0]);
   if (c.minutes >= 60 && c.profile !== "bodyweight") { g2Eligible++; if (short.length && infeasible(c)) provablyInfeasible++; if (short.length) g2Why[why(w)] = (g2Why[why(w)] || 0) + 1; if (short.length) v.G2.push(`${infeasible(c) ? "[infeasible] " : ""}${key}: ${short.map((m) => `${m} ${w.weekly[m]}/${w.targets[m][0]}`).join(", ")}`); }
@@ -63,7 +78,7 @@ console.log("reported:", JSON.stringify(result.reported));
 if (process.argv.includes("--write")) {
   mkdirSync(new URL("../reports/", import.meta.url), { recursive: true });
   writeFileSync(new URL("../reports/verification.json", import.meta.url), JSON.stringify(result, null, 2));
-  const names = { G1: "Equipment safety", G2: "Coverage (≥ 60 min, equipment profiles)", G3: "No silent shortfall", G4: `Per-session ceiling (≤ ${SESSION_CAP} sets)`, G5: "Weekly maximum + 2", G6: "Determinism; main lifts stable across blocks" };
+  const names = { G1: "Equipment safety", G2: "Coverage (≥ 60 min, equipment profiles)", G3: "No silent shortfall", G4: `Per-session ceiling (≤ ${SESSION_CAP} sets)`, G5: "Weekly maximum + 2", G6: "Determinism; main lifts stable across blocks", G7: "Direct work for every focus muscle (amendment 1)" };
   writeFileSync(new URL("../reports/verification.md", import.meta.url), `# Generator verification (${result.ranAt.slice(0, 10)})
 
 Protocol: \`docs/VERIFICATION_PROTOCOL.md\`. Exhaustive: all ${configs.length} supported configurations (G2 applies to ${g2Eligible}).
