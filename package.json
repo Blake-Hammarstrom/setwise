@@ -1,0 +1,15 @@
+{
+  "name": "setwise",
+  "private": true,
+  "description": "Setwise: daily workouts that cover every muscle for your equipment and split, with progression and honest progress tracking. Local-first.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify": "node scripts/verify.mjs --write",
+    "build": "node build.mjs",
+    "serve": "node build.mjs && node scripts/serve.mjs 4177"
+  }
+}

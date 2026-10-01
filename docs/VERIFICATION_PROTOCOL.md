@@ -38,3 +38,29 @@ Fixed 2026-10-01, **before the generator was written.** These rules don't change
 | P2 | The deployed flow, verified at phone width: setup → today's session → log sets → the next session shows progressed loads → progress view |
 | P3 | **Real use (owner):** Blake logs at least 12 sessions over at least 4 weeks. Reported: adherence (planned vs logged sessions), weekly volume vs target, and the lifts that progressed or stalled |
 | P4 | **Stretch:** one real N-of-1 Lab experiment using Setwise's exported outcome |
+
+## Development record and result (2026-10-01)
+**There's no held-out set.** G1–G6 are checked **exhaustively** over the whole configuration space (192 configurations), so the generator was iterated against them directly.
+
+**Iterations, all before the report was written:**
+1. **Two-pass planning:** main lifts first, so accessory rotation can't move them (G6).
+2. **Time-proportional shares:** no muscle starves while compounds take the whole session.
+3. **Fixed a double-counted deficit.**
+4. **Pattern and set rules:** up to 2 exercises per pattern, isolation work up to 5 sets, and exercises that credit a needed muscle as a secondary are now considered.
+5. **Truthful shortfall reasons:**
+   - "time" only when the session's shares were cut to fit, or an exercise didn't fit
+   - "selection" when it's the generator's own miss
+   - plus "equipment variety" and "split frequency"
+
+**Result (`reports/verification.md`): G1, G3, G4, G5 and G6 MET; G2 NOT MET.**
+
+**G2 as written can't be met, and it isn't moved.** Its misses fall into two groups, by each plan's own stated reason:
+- **Structural (54):** splits that train a muscle once a week (3-day PPL, 2-day upper/lower, body-part), where a minimum above the 10-set per-session ceiling (G4) is impossible. Under-training frequency is a real limitation of those splits.
+- **Time budget (60):** for example, 2-day full body at 60–75 minutes. The sessions in those plans run at a median 95% of the time available, so time is the actual constraint.
+- **The protocol's own G2 and G4 conflicted;** that should have been caught when it was written.
+
+**The product response:**
+- every shortfall is shown with its reason (G3: none silent)
+- a **fit advisor** suggests the nearest setups (split, ±1 day, +15 min) that meet every minimum
+
+**Remaining generator-only misses:** 1 configuration (commercial / 3-day PPL / advanced / 90 min: rear delts 6.5 of 7).

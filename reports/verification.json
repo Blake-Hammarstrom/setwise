@@ -1,0 +1,72 @@
+{
+  "ranAt": "2026-10-01T21:29:34.031Z",
+  "configurations": 384,
+  "g2Eligible": 216,
+  "criteria": {
+    "G1": {
+      "violations": 0,
+      "met": true,
+      "examples": []
+    },
+    "G2": {
+      "violations": 114,
+      "met": false,
+      "examples": [
+        "commercial/fullBody/2d/beginner/60min: chest 6/8, sideDelts 4/7, triceps 4/6, hamstrings 6.5/7, abs 2/4",
+        "commercial/fullBody/2d/beginner/75min: sideDelts 6/7",
+        "commercial/fullBody/2d/intermediate/60min: chest 4/12, sideDelts 4/10, rearDelts 5/6, biceps 5/8, triceps 4/8, hamstrings 6/10, calves 4/6, abs 4/6",
+        "commercial/fullBody/2d/intermediate/75min: chest 10/12, sideDelts 7.5/10, biceps 6/8, triceps 6/8, hamstrings 7/10, calves 4/6, abs 4/6",
+        "commercial/fullBody/2d/intermediate/90min: sideDelts 7/10, hamstrings 7/10, calves 4/6, abs 4/6",
+        "commercial/fullBody/2d/advanced/60min: chest 4/14, lats 10/12, upperBack 10/12, sideDelts 4/12, rearDelts 5/7, biceps 5/10, triceps 4/10, quads 12/14, hamstrings 6/12, calves 4/7, abs 4/7",
+        "commercial/fullBody/2d/advanced/75min: chest 8/14, sideDelts 6/12, biceps 8/10, triceps 4/10, hamstrings 7/12, calves 4/7, abs 4/7",
+        "commercial/fullBody/2d/advanced/90min: chest 12/14, sideDelts 8.5/12, triceps 7/10, hamstrings 7/12, calves 4/7, abs 4/7",
+        "commercial/fullBody/3d/intermediate/60min: chest 10/12, sideDelts 6/10, triceps 6/8, abs 4/6",
+        "commercial/fullBody/3d/advanced/60min: chest 7/14, sideDelts 6/12, biceps 7.5/10, triceps 5.5/10, hamstrings 9.5/12, calves 6/7, abs 6/7",
+        "commercial/fullBody/3d/advanced/75min: sideDelts 9/12, biceps 9/10, hamstrings 10.5/12, calves 6/7, abs 6/7",
+        "commercial/fullBody/3d/advanced/90min: calves 6/7, abs 6/7"
+      ]
+    },
+    "G3": {
+      "violations": 0,
+      "met": true,
+      "examples": []
+    },
+    "G4": {
+      "violations": 0,
+      "met": true,
+      "examples": []
+    },
+    "G5": {
+      "violations": 0,
+      "met": true,
+      "examples": []
+    },
+    "G6": {
+      "violations": 0,
+      "met": true,
+      "examples": []
+    }
+  },
+  "reported": {
+    "g2MissesByReason": {
+      "time budget": 60,
+      "structural: split trains a muscle once a week, minimum > per-session ceiling": 54
+    },
+    "g2ProvablyInfeasible": 0,
+    "coverageAt45": "7/96",
+    "bodyweightShortfalls": {
+      "chest": 32,
+      "lats": 35,
+      "upperBack": 21,
+      "sideDelts": 94,
+      "triceps": 29,
+      "quads": 45,
+      "calves": 48,
+      "abs": 29,
+      "biceps": 27,
+      "hamstrings": 44,
+      "rearDelts": 5,
+      "glutes": 7
+    }
+  }
+}
