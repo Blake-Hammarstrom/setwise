@@ -40,7 +40,7 @@ Fixed 2026-10-01, **before the generator was written.** These rules don't change
 | P4 | **Stretch:** one real N-of-1 Lab experiment using Setwise's exported outcome |
 
 ## Development record and result (2026-10-01)
-**There's no held-out set.** G1–G6 are checked **exhaustively** over the whole configuration space (192 configurations), so the generator was iterated against them directly.
+**There's no held-out set.** G1–G6 are checked **exhaustively** over the whole configuration space (384 configurations; G2 applies to 216), so the generator was iterated against them directly.
 
 **Iterations, all before the report was written:**
 1. **Two-pass planning:** main lifts first, so accessory rotation can't move them (G6).
