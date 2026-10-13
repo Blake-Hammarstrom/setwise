@@ -30,6 +30,8 @@ Or bring your own:
 - `docs/VERIFICATION_PROTOCOL.md`: fixed before the generator, plus dated amendments
 - `reports/verification.md`: exhaustive over all 384 setups
 
+**Your data:** `docs/DATA.md` — where it's stored, backups, restore, and moving to a new phone.
+
 ```
 npm test        # progression rules, generator, routines, privacy
 npm run verify  # exhaustive generator invariants G1–G7 → reports/
