@@ -52,3 +52,76 @@ test("unknown exercises are flagged, never silently guessed with confidence", ()
   assert.equal(matchExercise("tricep pushdown", eq).id, "pushdown");
   assert.equal(parseRoutine("warm up 10 min bike\n\n").days.length, 0);
 });
+
+test("slash-separated day patterns (Upper/Lower, Push/Pull, Legs + Core, Chest & Back)", () => {
+  const r = parseRoutine("Upper/Lower\nBench 3x8\nPush/Pull\nOHP 3x8\nPull-ups 3x6\nLegs + Core\nSquat 5x5\nChest & Back\nRows 3x10", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Upper/Lower", "Push/Pull", "Legs + Core", "Chest & Back"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[1].items.length, 2);
+});
+
+test("Upper Body, Lower Body, and Full Body headings", () => {
+  const r = parseRoutine("Upper Body\nBench 3x8\nLower Body\nSquat 5x5\nFull Body\nRows 3x10", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Upper Body", "Lower Body", "Full Body"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[1].items[0].id, "back-squat");
+  assert.equal(r.days[2].items[0].id, "bb-row");
+});
+
+test("Workout A, Workout B, and Workout A/B headings", () => {
+  const r = parseRoutine("Workout A\nBench 3x8\nWorkout B\nSquat 5x5\nWorkout A/B\nRows 3x10", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Workout A", "Workout B", "Workout A/B"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[2].items[0].id, "bb-row");
+});
+
+test("muscle-group headings joined by &, 'and', /, or + (Chest & Triceps, Back and Biceps, Chest/Tris, Shoulders + Arms)", () => {
+  const r = parseRoutine("Chest & Triceps\nBench 3x8\nBack and Biceps\nRows 3x10\nChest/Tris\nDips 3x10\nShoulders + Arms\nOHP 3x8", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Chest & Triceps", "Back And Biceps", "Chest/Tris", "Shoulders + Arms"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[1].items[0].id, "bb-row");
+  assert.equal(r.days[2].items[0].id, "dip");
+  assert.equal(r.days[3].items[0].id, "ohp");
+});
+
+test("Week N Day N patterns with labels", () => {
+  const r = parseRoutine("Week 1 Day 1 - Upper\nBench 3x8\nWeek 1 Day 2 - Lower\nSquat 5x5", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Week 1 Day 1 - Upper", "Week 1 Day 2 - Lower"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+});
+
+test("'Day N: Label' and 'Day N - Label' treat the label as part of the day name, not an exercise", () => {
+  const r = parseRoutine("Day 1: Chest\nBench press 3x8\nDay 2 - Back\nRows 3x10", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Day 1: Chest", "Day 2 - Back"]);
+  assert.equal(r.days[0].items.length, 1);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[1].items.length, 1);
+  assert.equal(r.days[1].items[0].id, "bb-row");
+});
+
+test("'Push: bench 3x8' stays a heading plus a bench exercise on one line", () => {
+  const r = parseRoutine("Push: bench 3x8", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Push"]);
+  assert.equal(r.days[0].items.length, 1);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+});
+
+test("superset labels (A1., A2), B1., 1a.) are stripped with the same confidence as the unlabeled exercise", () => {
+  const plainBench = matchExercise("bench press", eq);
+  const plainRow = matchExercise("rows", eq);
+  const plainOhp = matchExercise("ohp", eq);
+  const plainCurl = matchExercise("bicep curls", eq);
+  const r = parseRoutine("Upper\nA1. Bench press 3x8\nA2) Rows 3x8\nB1. OHP 3x8\n1a. Bicep curls 3x12", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Upper"]);
+  assert.deepEqual(r.days[0].items.map((i) => i.id), ["bb-bench", "bb-row", "ohp", "db-curl"]);
+  assert.equal(r.days[0].items[0].confidence, plainBench.confidence);
+  assert.equal(r.days[0].items[1].confidence, plainRow.confidence);
+  assert.equal(r.days[0].items[2].confidence, plainOhp.confidence);
+  assert.equal(r.days[0].items[3].confidence, plainCurl.confidence);
+});
+
+test("exercises that look like headings stay exercises: Back squat, Chest press machine, Shoulder press, Leg press, Chest fly", () => {
+  const r = parseRoutine("Back squat 3x5\nChest press machine 3x10\nShoulder press 3x8\nLeg press 3x12\nChest fly 3x12", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Day 1"]);
+  assert.deepEqual(r.days[0].items.map((i) => i.id), ["back-squat", "machine-press", "db-ohp", "leg-press", "band-fly"]);
+});
