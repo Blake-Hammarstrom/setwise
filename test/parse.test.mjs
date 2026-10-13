@@ -52,3 +52,38 @@ test("unknown exercises are flagged, never silently guessed with confidence", ()
   assert.equal(matchExercise("tricep pushdown", eq).id, "pushdown");
   assert.equal(parseRoutine("warm up 10 min bike\n\n").days.length, 0);
 });
+
+test("slash-separated day patterns (Upper/Lower, Workout A/B)", () => {
+  const r = parseRoutine("Upper/Lower\nBench 3x8\nLower\nSquat 5x5", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Upper/Lower", "Lower"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[1].items[0].id, "back-squat");
+});
+
+test("connector-separated day patterns (Chest & Back, Push/Pull, Legs + Core)", () => {
+  const r = parseRoutine("Chest & Back\nBench 3x8\nRows 3x10\nPush/Pull\nOHP 3x8\nPull-ups 3x6", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Chest & Back", "Push/Pull"]);
+  assert.equal(r.days[0].items.length, 2);
+  assert.equal(r.days[1].items.length, 2);
+});
+
+test("Week N Day N patterns with labels", () => {
+  const r = parseRoutine("Week 1 Day 1 - Upper\nBench 3x8\nWeek 1 Day 2 - Lower\nSquat 5x5", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Week 1 Day 1 - Upper", "Week 1 Day 2 - Lower"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+});
+
+test("superset labels (A1, B2, etc) are stripped", () => {
+  const r = parseRoutine("Upper\nA1. Bench press 3x8\nA2. Rows 3x8\nB1. OHP 3x8", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Upper"]);
+  assert.equal(r.days[0].items[0].id, "bb-bench");
+  assert.equal(r.days[0].items[1].id, "bb-row");
+  assert.equal(r.days[0].items[2].id, "ohp");
+});
+
+test("'and' and 'or' connectors in day patterns", () => {
+  const r = parseRoutine("Chest and Back\nBench 3x8\nRows 3x10\nPush or Pull\nOHP 3x8\nPull-ups 3x6", eq);
+  assert.deepEqual(r.days.map((d) => d.name), ["Chest And Back", "Push Or Pull"]);
+  assert.equal(r.days[0].items.length, 2);
+  assert.equal(r.days[1].items.length, 2);
+});

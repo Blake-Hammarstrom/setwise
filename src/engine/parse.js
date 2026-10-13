@@ -68,7 +68,15 @@ export function matchExercise(phrase, equipment = null) {
 const isHeading = (line) => {
   const t = line.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
   if (!t) return false;
-  if (/^day \d+( [a-z ]{0,20})?$/.test(t) || /^(week|session) \d+$/.test(t)) return true;
+  // Day patterns: "day 1", "day 1 upper", "week 1 day 1", "week 1 day 1 upper", "session 1"
+  if (/^day \d+( [a-z ]{0,30})?$/.test(t) || /^week \d+ day \d+( [a-z ]{0,30})?$/.test(t) || /^(session) \d+$/.test(t)) return true;
+  // Multi-day patterns: "upper lower", "upper lower body", "chest back", "workout a b", etc.
+  const words = t.split(/\s+/);
+  if (words.length === 2 && DAY_WORDS.includes(words[0]) && DAY_WORDS.includes(words[1])) return true;
+  if (words.length === 3 && DAY_WORDS.includes(words[0]) && DAY_WORDS.includes(words[1]) && words[2] === "body") return true;
+  // Handle "and" or "or" as connector: "chest and back", "push or pull"
+  if (words.length === 3 && DAY_WORDS.includes(words[0]) && (words[1] === "and" || words[1] === "or") && DAY_WORDS.includes(words[2])) return true;
+  // Single day word patterns: "push", "push day", "push a", "upper 1"
   return DAY_WORDS.some((w) => t === w || t === `${w} day` || new RegExp(`^${w} (day )?([a-d]|\\d)$`).test(t));
 };
 const title = (s) => s.replace(/[:\-–—]+\s*$/, "").trim().replace(/\b\w/g, (c) => c.toUpperCase());
