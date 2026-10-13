@@ -7,7 +7,7 @@ import { EXERCISES } from "./exercises.js";
 const NUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
   fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, "twenty five": 25, thirty: 30 };
 const DAY_WORDS = ["push", "pull", "legs", "leg", "upper", "lower", "full body", "fullbody", "chest", "back", "shoulders", "arms", "core",
-  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  "triceps", "tris", "biceps", "bis", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 // Common gym shorthand → library words. Order matters: longer phrases first.
 const ALIASES = [
@@ -63,19 +63,24 @@ export function matchExercise(phrase, equipment = null) {
   return best && { id: best.ex.id, confidence: Math.max(0, Math.min(1, best.score)) };
 }
 
-// A heading is a day name on its own: "Push", "Push day", "Push A", "Upper 1", "Day 2", "Day 2 - legs", "Monday".
-// "Back squat" or "Chest press" are exercises, not headings.
+// A heading is a day name on its own: "Push", "Push day", "Push A", "Upper 1", "Day 2", "Day 2 - legs", "Monday",
+// "Upper Body", "Workout A/B", "Chest & Triceps". "Back squat" or "Chest press" are exercises, not headings.
 const isHeading = (line) => {
-  const t = line.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const lc = line.toLowerCase().trim();
+  if (!lc) return false;
+  // "Upper Body", "Lower Body", "Full Body"
+  if (/^(upper|lower|full) body$/.test(lc)) return true;
+  // "Workout A", "Workout B", "Workout A/B"
+  if (/^workout\s*[ab](?:\s*\/\s*[ab])?$/.test(lc)) return true;
+  // Two day/muscle-group words joined by an explicit connector: "Chest & Triceps", "Back and Biceps", "Chest/Tris",
+  // "Shoulders + Arms". The connector must be present; bare "Chest Triceps" is not a heading.
+  const conn = lc.match(/^([a-z]+)\s*(?:&|\/|\+|\band\b)\s*([a-z]+)$/);
+  if (conn && DAY_WORDS.includes(conn[1]) && DAY_WORDS.includes(conn[2])) return true;
+
+  const t = lc.replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
   if (!t) return false;
   // Day patterns: "day 1", "day 1 upper", "week 1 day 1", "week 1 day 1 upper", "session 1"
   if (/^day \d+( [a-z ]{0,30})?$/.test(t) || /^week \d+ day \d+( [a-z ]{0,30})?$/.test(t) || /^(session) \d+$/.test(t)) return true;
-  // Multi-day patterns: "upper lower", "upper lower body", "chest back", "workout a b", etc.
-  const words = t.split(/\s+/);
-  if (words.length === 2 && DAY_WORDS.includes(words[0]) && DAY_WORDS.includes(words[1])) return true;
-  if (words.length === 3 && DAY_WORDS.includes(words[0]) && DAY_WORDS.includes(words[1]) && words[2] === "body") return true;
-  // Handle "and" or "or" as connector: "chest and back", "push or pull"
-  if (words.length === 3 && DAY_WORDS.includes(words[0]) && (words[1] === "and" || words[1] === "or") && DAY_WORDS.includes(words[2])) return true;
   // Single day word patterns: "push", "push day", "push a", "upper 1"
   return DAY_WORDS.some((w) => t === w || t === `${w} day` || new RegExp(`^${w} (day )?([a-d]|\\d)$`).test(t));
 };
@@ -93,12 +98,15 @@ export function parseRoutine(text, equipment = null) {
   const prepared = String(text || "").replace(/\r/g, "")
     .replace(/\b(and then|after that|then|next)\b/gi, "\n")
     .replace(/\b((?:push|pull|legs?|upper|lower|chest|back|shoulders?|arms?|full body) day)\b/gi, "\n$1\n");
-  const lines = prepared.split(/\n|;|•|·|,\s*(?=[a-z])/i).map((l) => l.replace(/^\s*(?:[-*]|\d+[.)])\s+/, "").trim()).filter(Boolean);
+  // Superset labels ("A1.", "A2)", "B1.", "1a.") are set-ordering notes, not part of the exercise name.
+  const lines = prepared.split(/\n|;|•|·|,\s*(?=[a-z])/i)
+    .map((l) => l.replace(/^\s*(?:[-*]|\d+[.)]|[a-z]\d+[.)]|\d+[a-z][.)])\s+/i, "").trim()).filter(Boolean);
   for (const raw of lines) {
+    // A heading can span the whole line, including a label after it: "Day 1: Chest", "Day 2 - Back".
+    if (isHeading(raw)) { ensure(title(raw)); continue; }
     // "Push: bench 3x8" → heading + item on one line.
     const colon = raw.match(/^([^:]{2,30}):\s*(.*)$/);
     if (colon && isHeading(colon[1])) { ensure(title(colon[1])); if (!colon[2]) continue; addItem(colon[2]); continue; }
-    if (isHeading(raw)) { ensure(title(raw)); continue; }
     addItem(raw);
   }
   function addItem(line) {
