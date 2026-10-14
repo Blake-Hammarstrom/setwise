@@ -76,9 +76,22 @@ export function searchExercises(q, muscle, equipment, customs = []) {
     .sort((a, b) => Number(b.ok) - Number(a.ok) || (muscle ? Number(b.ex.primary.includes(muscle)) - Number(a.ex.primary.includes(muscle)) : 0) || a.ex.name.localeCompare(b.ex.name));
 }
 
-/** Plates per side for a barbell load (greedy; standard plate sets). */
-export function platesPerSide(total, units = "lb", bar = units === "kg" ? 20 : 45) {
-  const set = units === "kg" ? [25, 20, 15, 10, 5, 2.5, 1.25] : [45, 35, 25, 10, 5, 2.5];
+export const DEFAULT_BAR = { lb: 45, kg: 20 };
+export const DEFAULT_PLATES = { lb: [45, 35, 25, 10, 5, 2.5], kg: [25, 20, 15, 10, 5, 2.5, 1.25] };
+
+const usablePlates = (list) => (Array.isArray(list) ? [...new Set(list.filter((p) => typeof p === "number" && p > 0 && Number.isFinite(p)))].sort((a, b) => b - a) : []);
+
+/** The bar and plates a lifter owns for these units; each field falls back to the standard kit when missing or invalid. */
+export function kitFor(prefs, units = "lb") {
+  const u = units === "kg" ? "kg" : "lb";
+  const b = prefs?.bar?.[u], own = usablePlates(prefs?.plates?.[u]);
+  return { bar: typeof b === "number" && b > 0 && Number.isFinite(b) ? b : DEFAULT_BAR[u], plates: own.length ? own : [...DEFAULT_PLATES[u]] };
+}
+
+/** Plates per side for a barbell load (greedy, largest first; only the plates given, else the standard set). */
+export function platesPerSide(total, units = "lb", bar = DEFAULT_BAR[units === "kg" ? "kg" : "lb"], plates) {
+  const own = usablePlates(plates);
+  const set = own.length ? own : DEFAULT_PLATES[units === "kg" ? "kg" : "lb"];
   let side = (total - bar) / 2;
   if (side < 0) return null;
   const out = [];

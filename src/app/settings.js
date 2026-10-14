@@ -1,5 +1,6 @@
 // Settings: everything onboarding defaulted, plus data safety (backup, restore, install).
 import { BY_ID, EQUIPMENT, PROFILES } from "../engine/exercises.js";
+import { DEFAULT_PLATES, kitFor } from "../engine/routine.js";
 import { SPLITS } from "../engine/generator.js";
 import { sessionBest } from "../engine/progression.js";
 import { exName, historyOf, load, save, update } from "./state.js";
@@ -13,6 +14,7 @@ export function settings(app, go) {
   const s = load(), p = s.profile, custom = !!s.routine;
   const daysOpts = custom ? [1, 2, 3, 4, 5, 6, 7] : Object.keys(SPLITS[p.split].days).map(Number);
   const lifts = [...new Set((s.logs || []).flatMap((l) => l.items.map((i) => i.id)))];
+  const kit = kitFor(s.prefs, p.units);
   const swaps = Object.entries(p.swaps || {});
   const usedCustom = new Set((s.routine?.days || []).flatMap((d) => d.items.map((i) => i.id)));
   app.innerHTML = `<h1>Settings</h1>
@@ -27,6 +29,10 @@ export function settings(app, go) {
     <label>Rest, compound lifts<select id="st-rc">${[60, 90, 120, 150, 180, 240].map((x) => `<option value="${x}" ${s.prefs.restCompound === x ? "selected" : ""}>${x / 60} min</option>`).join("")}</select></label>
     <label>Rest, isolation<select id="st-ri">${[45, 60, 75, 90, 120].map((x) => `<option value="${x}" ${s.prefs.restIsolation === x ? "selected" : ""}>${x < 60 ? `${x}s` : `${r1(x / 60)} min`}</option>`).join("")}</select></label>
   </div><p class="small faint mt">Changing units doesn't convert weights you've already logged.</p></section>
+  <section class="card"><h2>Your bar and plates</h2>
+    <label>Bar weight (${p.units})<input type="number" id="st-bar" min="0" step="any" inputmode="decimal" value="${kit.bar}"></label>
+    <div class="checks mt">${DEFAULT_PLATES[p.units].map((x) => `<label><input type="checkbox" data-plate="${x}" ${kit.plates.includes(x) ? "checked" : ""}>${x} ${p.units}</label>`).join("")}</div>
+    <p class="small faint mt">Used for plates per side and warm-ups. Untick every plate to use the standard set.</p></section>
   ${custom ? "" : `<section class="card"><h2>Equipment</h2><p class="small muted">${p.equipment.length} items · the plan only uses these.</p><button class="btn" id="equip">Edit equipment</button></section>`}
   ${swaps.length ? `<section class="card"><h2>Your swaps</h2>${swaps.map(([from, to]) => `<div class="row between"><span>${esc(exName(from))} → <b>${esc(exName(to))}</b></span><button class="btn small ghost" data-unswap="${esc(from)}">Undo</button></div>`).join("")}</section>` : ""}
   ${(s.customExercises || []).length ? `<section class="card"><h2>Your exercises</h2>${s.customExercises.map((c) => `<div class="row between"><span>${esc(c.name)}</span>${usedCustom.has(c.id) ? `<span class="small faint">in your routine</span>` : `<button class="btn small ghost" data-rmc="${esc(c.id)}">Delete</button>`}</div>`).join("")}</section>` : ""}
@@ -44,6 +50,11 @@ export function settings(app, go) {
   $("#st-units", app).onchange = (e) => set((st) => (st.profile.units = e.target.value));
   $("#st-rc", app).onchange = (e) => set((st) => (st.prefs.restCompound = Number(e.target.value)));
   $("#st-ri", app).onchange = (e) => set((st) => (st.prefs.restIsolation = Number(e.target.value)));
+  $("#st-bar", app).onchange = (e) => { const v = Number(e.target.value); set((st) => { st.prefs.bar = { ...st.prefs.bar, [p.units]: v > 0 ? v : undefined }; }); };
+  $$("[data-plate]", app).forEach((c) => (c.onchange = () => {
+    const list = $$("[data-plate]", app).filter((x) => x.checked).map((x) => Number(x.dataset.plate));
+    set((st) => { st.prefs.plates = { ...st.prefs.plates, [p.units]: list }; });
+  }));
   $("#change", app).onclick = () => { if (!custom || confirm("Pick a different routine? Your own routine will be replaced; your log is kept.")) go("setup"); };
   $("#edit", app).onclick = (e) => { if (!custom) { e.preventDefault(); go("plan"); } };
   const eq = $("#equip", app);
