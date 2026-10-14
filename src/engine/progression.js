@@ -42,11 +42,20 @@ export function prescribe(ex, history, units = "lb") {
 /** Best estimated 1RM per session (bodyweight-only work uses reps, since there's no load to estimate from). */
 export const sessionBest = (ex, h) => Math.max(...h.sets.map((s) => (ex.load === "bodyweight" && !s.w ? s.reps : e1rm(s.w, s.reps))));
 
-/** R4: no new best in the last 4 exposures → stalled. */
+/** R4: no new best in the last 4 exposures → stalled. Bodyweight exercises compare only sessions in the same mode (added load vs none). */
 export function stalled(ex, history, window = 4) {
-  const done = history.filter((h) => h.sets?.length);
+  let done = history.filter((h) => h.sets?.length);
+  let score = (h) => sessionBest(ex, h);
+  if (ex.load === "bodyweight") {
+    const loaded = (h) => h.sets.some((s) => s.w > 0);
+    const mode = loaded(done[done.length - 1] ?? { sets: [] });
+    let start = done.length;
+    while (start > 0 && loaded(done[start - 1]) === mode) start--;
+    done = done.slice(start);
+    if (mode) score = (h) => sessionBest(ex, { sets: h.sets.filter((s) => s.w > 0) });
+  }
   if (done.length < window + 1) return false;
-  const bests = done.map((h) => sessionBest(ex, h));
+  const bests = done.map(score);
   const before = Math.max(...bests.slice(0, -window));
   return Math.max(...bests.slice(-window)) <= before;
 }
