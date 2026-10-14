@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BY_ID, EXERCISES, PROFILES, available } from "../src/engine/exercises.js";
+import { BY_ID, EXERCISES, PROFILES, available, credit } from "../src/engine/exercises.js";
 import { planWeek, suggestFits } from "../src/engine/generator.js";
-import { e1rm, prescribe, stalled } from "../src/engine/progression.js";
+import { e1rm, prescribe, sessionBest, stalled } from "../src/engine/progression.js";
 
 const S = (w, ...reps) => ({ date: "x", sets: reps.map((r) => ({ w, reps: r })) });
 const bench = BY_ID["bb-bench"], squat = BY_ID["back-squat"], db = BY_ID["db-curl"], pushup = BY_ID["pushup"];
@@ -62,4 +62,36 @@ test("generator: equipment-safe, deterministic, honest shortfalls, fit advice", 
   assert.ok(w.shortfalls.length && w.shortfalls.every((s) => s.reasons.length));
   assert.ok(suggestFits(p).every((f) => !planWeek({ ...p, ...f }).shortfalls.length));
   assert.throws(() => planWeek({ ...p, days: 5 }), /isn't offered/);
+});
+
+test("sessionBest: highest Epley estimate across loaded sets, most reps for unloaded bodyweight", () => {
+  const bench = BY_ID["bb-bench"];
+  const sets1 = { sets: [{ w: 185, reps: 8 }, { w: 190, reps: 6 }, { w: 185, reps: 7 }] };
+  assert.equal(sessionBest(bench, sets1), e1rm(185, 8));
+  const sets2 = { sets: [{ w: 185, reps: 6 }, { w: 185, reps: 8 }, { w: 185, reps: 7 }] };
+  assert.equal(sessionBest(bench, sets2), e1rm(185, 8));
+  const pushup = BY_ID["pushup"];
+  const bw = { sets: [{ w: 0, reps: 15 }, { w: 0, reps: 12 }, { w: 0, reps: 13 }] };
+  assert.equal(sessionBest(pushup, bw), 15);
+  const bwNoWeight = { sets: [{ reps: 18 }, { reps: 15 }, { reps: 16 }] };
+  assert.equal(sessionBest(pushup, bwNoWeight), 18);
+});
+
+test("credit: primary muscles 1, secondary 0.5, both → 1", () => {
+  const bench = BY_ID["bb-bench"];
+  const benchCredit = credit(bench);
+  assert.equal(benchCredit.chest, 1);
+  assert.equal(benchCredit.triceps, 0.5);
+  assert.equal(benchCredit.frontDelts, 0.5);
+  assert.equal(benchCredit.lats, undefined);
+  const incline = BY_ID["bb-incline"];
+  const inclineCredit = credit(incline);
+  assert.equal(inclineCredit.chest, 1);
+  assert.equal(inclineCredit.frontDelts, 1);
+  assert.equal(inclineCredit.triceps, 0.5);
+  const dip = BY_ID["dip"];
+  const dipCredit = credit(dip);
+  assert.equal(dipCredit.chest, 1);
+  assert.equal(dipCredit.triceps, 1);
+  assert.equal(dipCredit.frontDelts, 0.5);
 });
