@@ -28,6 +28,7 @@ Or bring your own:
 - a backup reminder, plus restore and CSV export of any lift
 
 **Evidence:**
+- `docs/PLAN.md`: how the weekly plan is built and what the shortfall messages mean
 - `docs/PROGRESSION.md`: how the next weight, reps and stall flags are decided
 - `docs/VERIFICATION_PROTOCOL.md`: fixed before the generator, plus dated amendments
 - `reports/verification.md`: exhaustive over all 384 setups
