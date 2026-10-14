@@ -17,8 +17,9 @@ export function makeCustomExercise({ name, primary = [], secondary = [], load = 
   if (!primary.every((m) => MUSCLES.includes(m)) || !secondary.every((m) => MUSCLES.includes(m))) throw new Error("Unknown muscle.");
   const [lo, hi] = reps.map(Number);
   if (!(lo >= 1 && hi > lo && hi <= 50)) throw new Error("Rep range must be like 8–12.");
-  return { id: `c-${slug(n) || "exercise"}-${now.toString(36)}`, name: n, equipment: ["floor"], primary, secondary: secondary.filter((m) => !primary.includes(m)),
-    pattern: `custom-${primary[0]}`, load, lower: !!lower, tier: "accessory", reps: [lo, hi], kind: primary.length + secondary.length > 1 ? "compound" : "isolation" };
+  const rest = secondary.filter((m) => !primary.includes(m));
+  return { id: `c-${slug(n) || "exercise"}-${now.toString(36)}`, name: n, equipment: ["floor"], primary, secondary: rest,
+    pattern: `custom-${primary[0]}`, load, lower: !!lower, tier: "accessory", reps: [lo, hi], kind: new Set([...primary, ...rest]).size > 1 ? "compound" : "isolation" };
 }
 
 export const routineFromPlan = (plan) => ({ days: plan.sessions.map((s) => ({ name: s.name, template: s.day, items: s.items.map(({ id, sets, reps }) => ({ id, sets, reps: [...reps] })) })) });
