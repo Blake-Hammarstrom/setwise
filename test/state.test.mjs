@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { historyOf, needsBackup, nextIndex } from "../src/app/state.js";
+import { PROFILES } from "../src/engine/exercises.js";
+import { block, historyOf, needsBackup, nextIndex, sessionsOf } from "../src/app/state.js";
 
 const DAY = 86400000;
 const logs = (n) => Array.from({ length: n }, () => ({ date: "2026-01-01", dayIndex: 0, items: [] }));
@@ -33,4 +34,24 @@ test("historyOf: only sessions with sets for the exercise, in log order", () => 
   assert.deepEqual(historyOf(s, "bb-bench"), [{ date: "d1", sets: a }, { date: "d4", sets: b }]);
   assert.deepEqual(historyOf(s, "nope"), []);
   assert.deepEqual(historyOf({}, "bb-bench"), []);
+});
+
+test("block: a missing or invalid startedAt counts as block 0", () => {
+  assert.equal(block({}), 0);
+  assert.equal(block({ startedAt: undefined }), 0);
+  assert.equal(block({ startedAt: "garbage" }), 0);
+});
+
+test("block: counts 28-day blocks since startedAt, never negative", () => {
+  assert.equal(block({ startedAt: ago(0) }), 0);
+  assert.equal(block({ startedAt: ago(27) }), 0);
+  assert.equal(block({ startedAt: ago(29) }), 1);
+  assert.equal(block({ startedAt: ago(57) }), 2);
+  assert.equal(block({ startedAt: ago(-10) }), 0);
+});
+
+test("sessionsOf: a missing startedAt plans the same as starting today", () => {
+  const profile = { split: "ppl", days: 3, minutes: 60, experience: "intermediate", equipment: PROFILES.home.equipment, units: "lb", swaps: {} };
+  const ids = (s) => sessionsOf(s).map((d) => d.items.map((i) => i.id));
+  assert.deepEqual(ids({ profile }), ids({ profile, startedAt: new Date().toISOString() }));
 });
