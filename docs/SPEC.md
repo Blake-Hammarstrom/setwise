@@ -61,3 +61,4 @@ log → double progression (top of range on all sets → add load; repeated miss
 - Social features and accounts; sync (export/import instead)
 - Video demos
 - Nutrition
+
