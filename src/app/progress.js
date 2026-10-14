@@ -1,7 +1,7 @@
 // Progress: logged volume vs targets, lift trends, and the full history (editable: mistakes happen mid-set).
 import { BY_ID, MUSCLES, credit } from "../engine/exercises.js";
 import { targets } from "../engine/generator.js";
-import { sessionBest, stalled } from "../engine/progression.js";
+import { personalBest, sessionBest, stalled } from "../engine/progression.js";
 import { suggestSwap } from "../engine/routine.js";
 import { exName, historyOf, load, nextIndex, save, sessionsOf } from "./state.js";
 import { $, $$, applyBars, closeSheet, esc, r1, sheet, toast, volumeBars } from "./ui.js";
@@ -26,8 +26,8 @@ export function progress(app) {
   <p class="lede">${logs.length ? `${logs.length} session${logs.length === 1 ? "" : "s"} logged · ${recent} in the last ${weeks} weeks (plan: ${s.profile.days * weeks})` : "Finish your first session and your progress shows up here."}</p>
   <section class="card"><h2>Sets per muscle, last 7 days</h2>${volumeBars(doneWeek, T)}<p class="small faint">From what you logged. The shaded band is the weekly target.</p></section>
   ${lifts.length ? `<section class="card"><h2>Lifts · estimated 1-rep max per session</h2>
-    ${lifts.map((l) => { const unloaded = l.ex.load === "bodyweight" && !l.h.at(-1).sets.some((x) => x.w); const first = l.best[0], lastV = l.best.at(-1);
-      return `<div class="lift"><div><b>${esc(l.ex.name)}</b><div class="small muted">${l.h.length} session${l.h.length === 1 ? "" : "s"}${l.h.length > 1 ? ` · ${lastV >= first ? "+" : ""}${Math.round(lastV - first)}${unloaded ? " reps" : ` ${units}`} since first` : ""}${l.st ? ` · <span class="warn">stalled${l.swap ? `: try ${esc(exName(l.swap))}` : ""}</span>` : ""}</div></div>${spark(l.best)}<div class="num">${Math.round(lastV)}${unloaded ? " reps" : ` ${units}`}</div></div>`; }).join("")}
+    ${lifts.map((l) => { const unloaded = l.ex.load === "bodyweight" && !l.h.at(-1).sets.some((x) => x.w); const first = l.best[0], lastV = l.best.at(-1), pb = personalBest(l.ex, l.h);
+      return `<div class="lift"><div><b>${esc(l.ex.name)}</b><div class="small muted">${l.h.length} session${l.h.length === 1 ? "" : "s"}${l.h.length > 1 ? ` · ${lastV >= first ? "+" : ""}${Math.round(lastV - first)}${unloaded ? " reps" : ` ${units}`} since first` : ""}${pb ? ` · best ${Math.round(pb.score)} ${pb.unit === "reps" ? "reps" : esc(units)} on ${esc(new Date(pb.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }))}` : ""}${l.st ? ` · <span class="warn">stalled${l.swap ? `: try ${esc(exName(l.swap))}` : ""}</span>` : ""}</div></div>${spark(l.best)}<div class="num">${Math.round(lastV)}${unloaded ? " reps" : ` ${units}`}</div></div>`; }).join("")}
     <p class="small faint">Estimated 1RM (Epley) from your best set each session. One bad day isn't a trend: "stalled" means no new best in 4 sessions.</p></section>` : ""}
   ${logs.length ? `<section class="card"><h2>History</h2>${[...logs].reverse().slice(0, 40).map((l) => { const i = logs.indexOf(l); return `<button class="pick-row" data-log="${i}"><b>${esc(l.day || "Session")} · ${fmtDate(l.date)}</b><span>${l.items.map((it) => `${exName(it.id)} ${it.sets.length}×`).join(", ")}</span></button>`; }).join("")}</section>` : ""}`;
   applyBars(app);
