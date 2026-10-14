@@ -1,7 +1,7 @@
 // Today: the session you're doing. Built to be used mid-workout: one tap per set, numbers prefilled, rest timer,
 // screen kept awake, and the draft saved after every change (closing the app loses nothing).
 import { BY_ID } from "../engine/exercises.js";
-import { increment, prescribe, sessionBest } from "../engine/progression.js";
+import { increment, isNewBest, prescribe } from "../engine/progression.js";
 import { kitFor, platesPerSide, warmups } from "../engine/routine.js";
 import { openPicker } from "./picker.js";
 import { block, exName, historyOf, load, needsBackup, nextIndex, persist, save, sessionsOf, update } from "./state.js";
@@ -134,7 +134,7 @@ function finish(app, go) {
   const open = d.items.reduce((n, it) => n + it.sets.filter((x) => !x.done).length, 0);
   if (open && !confirm(`${open} set${open === 1 ? "" : "s"} not ticked. Finish anyway?`)) return;
   // New bests (estimated 1RM, or reps for unloaded bodyweight work), before this session is added.
-  const prs = items.filter((it) => { const ex = BY_ID[it.id]; if (!ex) return false; const h = historyOf(st, it.id); const now = sessionBest(ex, it); return h.length && now > Math.max(...h.map((x) => sessionBest(ex, x))); }).map((it) => exName(it.id));
+  const prs = items.filter((it) => { const ex = BY_ID[it.id]; if (!ex) return false; return isNewBest(ex, historyOf(st, it.id), it); }).map((it) => exName(it.id));
   st.logs.push({ date: new Date().toISOString(), dayIndex: d.dayIndex, day: d.name, block: block(st), items });
   delete st.draft; save(st); persist(); stopRest();
   const sets = items.reduce((n, i) => n + i.sets.length, 0), mins = d.startedAt ? Math.round((Date.now() - Date.parse(d.startedAt)) / 60000) : null;
