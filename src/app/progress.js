@@ -2,6 +2,7 @@
 import { BY_ID, MUSCLES, credit } from "../engine/exercises.js";
 import { targets } from "../engine/generator.js";
 import { sessionBest, stalled } from "../engine/progression.js";
+import { suggestSwap } from "../engine/routine.js";
 import { exName, historyOf, load, nextIndex, save, sessionsOf } from "./state.js";
 import { $, $$, applyBars, closeSheet, esc, r1, sheet, toast, volumeBars } from "./ui.js";
 
@@ -10,7 +11,8 @@ export function progress(app) {
   const doneWeek = Object.fromEntries(MUSCLES.map((m) => [m, 0]));
   for (const l of logs.filter((l) => Date.parse(l.date) >= since)) for (const it of l.items) if (BY_ID[it.id]) for (const [m, v] of Object.entries(credit(BY_ID[it.id]))) doneWeek[m] += v * it.sets.length;
   const ids = [...new Set(logs.flatMap((l) => l.items.map((i) => i.id)))].filter((id) => BY_ID[id]);
-  const lifts = ids.map((id) => { const ex = BY_ID[id], h = historyOf(s, id); return { id, ex, h, best: h.map((x) => sessionBest(ex, x)), st: stalled(ex, h) }; })
+  const inRotation = sessionsOf(s).flatMap((d) => d.items.map((i) => i.id));
+  const lifts = ids.map((id) => { const ex = BY_ID[id], h = historyOf(s, id); return { id, ex, h, best: h.map((x) => sessionBest(ex, x)), st: stalled(ex, h), swap: suggestSwap(id, h, s.profile.equipment, s.customExercises || [], inRotation) }; })
     .sort((a, b) => b.h.length - a.h.length || a.ex.name.localeCompare(b.ex.name));
   const spark = (v) => {
     if (v.length < 2) return `<span class="small faint">first session</span>`;
@@ -25,7 +27,7 @@ export function progress(app) {
   <section class="card"><h2>Sets per muscle, last 7 days</h2>${volumeBars(doneWeek, T)}<p class="small faint">From what you logged. The shaded band is the weekly target.</p></section>
   ${lifts.length ? `<section class="card"><h2>Lifts · estimated 1-rep max per session</h2>
     ${lifts.map((l) => { const unloaded = l.ex.load === "bodyweight" && !l.h.at(-1).sets.some((x) => x.w); const first = l.best[0], lastV = l.best.at(-1);
-      return `<div class="lift"><div><b>${esc(l.ex.name)}</b><div class="small muted">${l.h.length} session${l.h.length === 1 ? "" : "s"}${l.h.length > 1 ? ` · ${lastV >= first ? "+" : ""}${Math.round(lastV - first)}${unloaded ? " reps" : ` ${units}`} since first` : ""}${l.st ? ` · <span class="warn">stalled: try a swap</span>` : ""}</div></div>${spark(l.best)}<div class="num">${Math.round(lastV)}${unloaded ? " reps" : ` ${units}`}</div></div>`; }).join("")}
+      return `<div class="lift"><div><b>${esc(l.ex.name)}</b><div class="small muted">${l.h.length} session${l.h.length === 1 ? "" : "s"}${l.h.length > 1 ? ` · ${lastV >= first ? "+" : ""}${Math.round(lastV - first)}${unloaded ? " reps" : ` ${units}`} since first` : ""}${l.st ? ` · <span class="warn">stalled${l.swap ? `: try ${esc(exName(l.swap))}` : ""}</span>` : ""}</div></div>${spark(l.best)}<div class="num">${Math.round(lastV)}${unloaded ? " reps" : ` ${units}`}</div></div>`; }).join("")}
     <p class="small faint">Estimated 1RM (Epley) from your best set each session. One bad day isn't a trend: "stalled" means no new best in 4 sessions.</p></section>` : ""}
   ${logs.length ? `<section class="card"><h2>History</h2>${[...logs].reverse().slice(0, 40).map((l) => { const i = logs.indexOf(l); return `<button class="pick-row" data-log="${i}"><b>${esc(l.day || "Session")} · ${fmtDate(l.date)}</b><span>${l.items.map((it) => `${exName(it.id)} ${it.sets.length}×`).join(", ")}</span></button>`; }).join("")}</section>` : ""}`;
   applyBars(app);
