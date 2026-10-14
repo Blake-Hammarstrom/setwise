@@ -53,6 +53,23 @@ export function isNewBest(ex, history, session) {
   return prior.length > 0 && score(session) > Math.max(...prior.map(score));
 }
 
+/** Personal best: the highest-scoring session in the latest session's mode (bodyweight only); ties keep the earliest. */
+export function personalBest(ex, history) {
+  const bw = ex.load === "bodyweight";
+  const loaded = (h) => bw && h.sets.some((s) => s.w > 0);
+  const score = (h) => (loaded(h) ? sessionBest(ex, { sets: h.sets.filter((s) => s.w > 0) }) : sessionBest(ex, h));
+  const done = history.filter((h) => h.sets?.length);
+  if (!done.length) return null;
+  const mode = loaded(done[done.length - 1]);
+  let best = null;
+  for (const h of done) {
+    if (loaded(h) !== mode) continue;
+    const sc = score(h);
+    if (!best || sc > best.score) best = { score: sc, date: h.date, unit: bw && !mode ? "reps" : "load" };
+  }
+  return best;
+}
+
 /** R4: no new best in the last 4 exposures → stalled. Bodyweight exercises compare only sessions in the same mode (added load vs none). */
 export function stalled(ex, history, window = 4) {
   let done = history.filter((h) => h.sets?.length);

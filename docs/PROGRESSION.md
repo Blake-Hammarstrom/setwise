@@ -51,6 +51,8 @@ Add weight is checked before back off.
 
 In the Progress view a stalled lift shows `stalled: try <exercise>`. The suggestion is the first like-for-like alternative available with your equipment: same movement pattern first, then same main muscle. Exercises already in your rotation are skipped. If none fits, it shows just `stalled`.
 
+Each lift in Progress also shows its personal best (`best 175 lb on Oct 3`): the highest-scoring session, counting bodyweight lifts only in the latest session's mode, with ties going to the earliest session.
+
 ## Known limitation: back off at light loads
 
 Rounding to the nearest increment can return the same load, so back off does not reduce the weight:
