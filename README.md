@@ -6,6 +6,7 @@ Daily workouts built for **your** equipment and routine: every muscle covered ea
 
 Or bring your own:
 - **Paste, photo or speak it.** Copy text from a photo with the phone's Live Text, or dictate it. A deterministic parser handles headings, `3x8`/`4 sets of 6-8`, abbreviations (db, ohp, rdl) and number words, and flags anything it isn't sure about for you to pick.
+- Details: `docs/IMPORT.md` explains exactly what the parser accepts and what saving does.
 - **Build it from day templates.** Push, Pull, Legs, Upper, Lower, Full body or body-part days, each pre-filled for your equipment, then edited.
 
 **In the gym:**
