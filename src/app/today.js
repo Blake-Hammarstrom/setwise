@@ -2,7 +2,7 @@
 // screen kept awake, and the draft saved after every change (closing the app loses nothing).
 import { BY_ID } from "../engine/exercises.js";
 import { increment, prescribe, sessionBest } from "../engine/progression.js";
-import { platesPerSide, warmups } from "../engine/routine.js";
+import { kitFor, platesPerSide, warmups } from "../engine/routine.js";
 import { openPicker } from "./picker.js";
 import { block, exName, historyOf, load, needsBackup, nextIndex, persist, save, sessionsOf, update } from "./state.js";
 import { $, $$, closeSheet, download, esc, fmtTime, sheet, toast } from "./ui.js";
@@ -53,11 +53,12 @@ export function today(app, go) {
   <div class="today-head"><div><h1>${esc(d.name)}</h1><p class="lede">${d.dayIndex === idx ? "Next in your rotation" : "Picked for today"} · ${doneSets}/${totalSets} sets${d.startedAt ? ` · started ${Math.round((Date.now() - Date.parse(d.startedAt)) / 60000)} min ago` : ""}</p></div>
     <button class="btn small ghost" id="otherday">Other day</button></div>
   ${d.items.map((it, k) => {
+    const kit = kitFor(s.prefs, units);
     const ex = BY_ID[it.id] || { name: it.id, load: "machine", reps: it.reps, primary: [], secondary: [] };
     const h = historyOf(s, it.id), last = h.at(-1), rx = prescribe({ ...ex, reps: it.reps }, h, units);
     const work = Number(it.sets[0]?.w) || rx.load || 0;
-    const plates = ex.load === "barbell" && work ? platesPerSide(work, units) : null;
-    const wu = (ex.tier === "main" && ["barbell", "dumbbell"].includes(ex.load) && work) ? warmups(work, increment(ex, units), ex.load === "barbell" ? (units === "kg" ? 20 : 45) : 0) : [];
+    const plates = ex.load === "barbell" && work ? platesPerSide(work, units, kit.bar, kit.plates) : null;
+    const wu = (ex.tier === "main" && ["barbell", "dumbbell"].includes(ex.load) && work) ? warmups(work, increment(ex, units), ex.load === "barbell" ? kit.bar : 0) : [];
     const allDone = it.sets.length && it.sets.every((x) => x.done);
     return `<section class="card ex-card ${allDone ? "complete" : ""}" data-k="${k}">
       <div class="ex-head"><b>${esc(ex.name)}</b><span class="tag ${rx.change}">${{ first: "new", up: "add weight", hold: "beat reps", down: "back off", variation: "level up" }[rx.change]}</span></div>
