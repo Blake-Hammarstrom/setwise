@@ -28,7 +28,7 @@ Fixed 2026-10-01, **before the generator was written.** These rules don't change
 | R1 | **Double progression:** all working sets at the top of the rep range (at the target effort) → the next session adds one load increment: barbell 5 lb / 2.5 kg upper, 10 lb / 5 kg lower; dumbbell 5 lb / 2 kg; cable or machine 5 lb / 2.5 kg; bodyweight → +1 rep target, then a harder variation |
 | R2 | **Hold:** otherwise, keep the load and aim for more reps |
 | R3 | **Reduce:** two consecutive sessions with every set below the range's bottom → load −10%, rounded to the increment |
-| R4 | **Stall:** no new best estimated 1RM (Epley) in 4 consecutive exposures → flag and suggest a same-pattern swap |
+| R4 | **Stall:** no new best estimated 1RM (Epley) in 4 consecutive exposures → flag and suggest a same-pattern swap. For bodyweight exercises only sessions in the same mode (no added load vs any set with added load) are compared, and switching modes starts a new baseline |
 | R5 | **First exposure:** no load is prescribed. The app asks for a weight you could lift for the top of the range with about 2 reps in reserve |
 
 ## Product criteria

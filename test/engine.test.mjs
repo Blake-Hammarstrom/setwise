@@ -54,6 +54,14 @@ test("R4 stall: no new best estimated 1RM in 4 exposures", () => {
   assert.ok(Math.abs(e1rm(185, 8) - 234.33) < 0.01);
 });
 
+test("R4 bodyweight: compares only sessions in the same mode; switching modes starts a new baseline", () => {
+  const up = [S(0, 18, 18, 18), S(0, 19, 19, 19), S(0, 20, 20, 20), S(5, 8, 8, 8), S(5, 10, 10, 10), S(5, 12, 12, 12), S(5, 14, 14, 14)];
+  assert.equal(stalled(pushup, up), false);
+  assert.equal(stalled(pushup, [S(0, 20, 20, 20), ...Array(5).fill(S(10, 12, 12, 12))]), true);
+  assert.equal(stalled(pushup, Array(5).fill(S(0, 15, 15, 15))), true);
+  assert.equal(stalled(pushup, [...Array(5).fill(S(10, 12, 12, 12)), ...Array(4).fill(S(0, 15, 15, 15))]), false);
+});
+
 test("generator: equipment-safe, deterministic, honest shortfalls, fit advice", () => {
   const p = { split: "ppl", days: 3, minutes: 60, experience: "intermediate", equipment: PROFILES.home.equipment };
   const w = planWeek(p);
