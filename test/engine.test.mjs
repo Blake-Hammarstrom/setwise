@@ -77,7 +77,15 @@ test("sessionBest: highest Epley estimate across loaded sets, most reps for unlo
   assert.equal(sessionBest(pushup, bwNoWeight), 18);
 });
 
-test("credit: primary muscles 1, secondary 0.5, both → 1", () => {
+test("credit: a muscle listed as both primary and secondary gets 1", () => {
+  const overlap = { primary: ["chest"], secondary: ["chest", "triceps"] };
+  const c = credit(overlap);
+  assert.equal(c.chest, 1);
+  assert.equal(c.triceps, 0.5);
+  assert.deepEqual(Object.keys(c).sort(), ["chest", "triceps"]);
+});
+
+test("credit: primary muscles 1, secondary 0.5, multiple primaries each 1", () => {
   const bench = BY_ID["bb-bench"];
   const benchCredit = credit(bench);
   assert.equal(benchCredit.chest, 1);
