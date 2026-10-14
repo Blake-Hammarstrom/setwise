@@ -25,7 +25,11 @@ export function save(s) {
 export const update = (f) => { const s = load(); f(s); save(s); return s; };
 
 export const defaultUnits = () => (/^en-(US|LR|MM)/.test(navigator.language || "") ? "lb" : "kg");
-export const block = (s) => Math.max(0, Math.floor((Date.now() - Date.parse(s.startedAt || Date.now())) / (BLOCK_DAYS * 86400000)));
+export const block = (s) => {
+  const start = Date.parse(s.startedAt);
+  if (Number.isNaN(start)) return 0;
+  return Math.max(0, Math.floor((Date.now() - start) / (BLOCK_DAYS * 86400000)));
+};
 
 /** The days you cycle through: your own routine, or the generated plan with your permanent swaps applied. */
 export function sessionsOf(s) {
