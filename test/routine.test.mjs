@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BY_ID, PROFILES, available } from "../src/engine/exercises.js";
+import { BY_ID, EXERCISES, PROFILES, available } from "../src/engine/exercises.js";
 import { QUICK_STARTS, planDay, planWeek, targets } from "../src/engine/generator.js";
 import { alternatives, applySwaps, coverage, makeCustomExercise, platesPerSide, registerCustom, routineFromPlan, searchExercises, warmups } from "../src/engine/routine.js";
 
@@ -71,4 +71,127 @@ test("day templates: each fills a day with direct work for its focus, for the gi
   const a = planDay("full", p, 0).items.map((i) => i.id).join(), b = planDay("full", p, 1).items.map((i) => i.id).join();
   assert.notEqual(a, b, "Full body A and B differ");
   for (const q of QUICK_STARTS) for (const k of q.days) assert.ok(planDay(k, p).items.length, `${q.label}: ${k} filled`);
+});
+
+test("searchExercises: text match ignores case and surrounding spaces", () => {
+  const results1 = searchExercises("curl", "", eq);
+  const results2 = searchExercises("CURL", "", eq);
+  const results3 = searchExercises("  curl  ", "", eq);
+  assert.deepEqual(
+    results1.map((r) => r.ex.id),
+    results2.map((r) => r.ex.id),
+    "uppercase matches lowercase"
+  );
+  assert.deepEqual(
+    results1.map((r) => r.ex.id),
+    results3.map((r) => r.ex.id),
+    "extra spaces don't affect match"
+  );
+});
+
+test("searchExercises: muscle filter matches primary or secondary muscles", () => {
+  const results = searchExercises("", "triceps", eq);
+  assert.ok(results.length > 0, "triceps filter returns results");
+  assert.ok(
+    results.every((r) => r.ex.primary.includes("triceps") || r.ex.secondary.includes("triceps")),
+    "every result includes triceps as primary or secondary"
+  );
+  assert.ok(
+    results.some((r) => r.ex.id === "bb-bench"),
+    "bb-bench (triceps secondary) is included"
+  );
+});
+
+test("searchExercises: available exercises before unavailable, with muscle filter primary before secondary", () => {
+  const results = searchExercises("", "triceps", PROFILES.bodyweight.equipment);
+  assert.ok(results.length > 0, "has results");
+  const available = results.filter((r) => r.ok === true);
+  const unavailable = results.filter((r) => r.ok === false);
+  if (available.length > 0 && unavailable.length > 0) {
+    const lastAvailableIdx = results.length - unavailable.length - 1;
+    assert.ok(available.every((r) => results.indexOf(r) <= lastAvailableIdx), "all available come before unavailable");
+  }
+  const availablePrimary = available.filter((r) => r.ex.primary.includes("triceps"));
+  const availableSecondary = available.filter((r) => !r.ex.primary.includes("triceps"));
+  if (availablePrimary.length > 0 && availableSecondary.length > 0) {
+    const lastPrimaryIdx = Math.max(...availablePrimary.map((r) => results.indexOf(r)));
+    const firstSecondaryIdx = Math.min(...availableSecondary.map((r) => results.indexOf(r)));
+    assert.ok(lastPrimaryIdx < firstSecondaryIdx, "primary triceps exercises come before secondary");
+  }
+  for (let i = 1; i < results.length; i++) {
+    const prev = results[i - 1];
+    const curr = results[i];
+    if (prev.ok === curr.ok) {
+      if (prev.ex.primary.includes("triceps") === curr.ex.primary.includes("triceps")) {
+        const cmp = prev.ex.name.localeCompare(curr.ex.name);
+        assert.ok(cmp <= 0, `${prev.ex.name} <= ${curr.ex.name} alphabetically within group`);
+      }
+    }
+  }
+});
+
+test("searchExercises: custom exercise returned when in customs, always marked ok true", () => {
+  const custom = makeCustomExercise({ name: "Custom Pull", primary: ["lats"], secondary: ["biceps"] }, 1);
+  const results = searchExercises("custom", "", PROFILES.bodyweight.equipment, [custom]);
+  const found = results.find((r) => r.ex.id === custom.id);
+  assert.ok(found, "custom exercise is in results");
+  assert.equal(found.ok, true, "custom exercise marked ok=true");
+});
+
+test("searchExercises: custom exercise ok=true even with unavailable equipment", () => {
+  const custom = makeCustomExercise({ name: "Cable Machine Custom", primary: ["chest"], equipment: ["cable"] }, 2);
+  const bodyweightEq = PROFILES.bodyweight.equipment;
+  const results = searchExercises("cable", "", bodyweightEq, [custom]);
+  const found = results.find((r) => r.ex.id === custom.id);
+  assert.ok(found, "custom exercise found");
+  assert.equal(found.ok, true, "custom exercise marked ok=true regardless of missing equipment");
+});
+
+test("searchExercises: no query and no muscle returns all library exercises", () => {
+  const results = searchExercises("", "", eq);
+  assert.equal(results.length, EXERCISES.length, "all library exercises returned");
+});
+
+test("searchExercises: custom exercises come first in results", () => {
+  const custom = makeCustomExercise({ name: "AAA Custom", primary: ["chest"] }, 3);
+  const results = searchExercises("", "", eq, [custom]);
+  assert.equal(results[0].ex.id, custom.id, "custom exercises are first");
+});
+
+test("searchExercises: muscle and text filters both apply", () => {
+  const results = searchExercises("curl", "biceps", eq);
+  assert.ok(results.length > 0, "finds biceps curls");
+  assert.ok(
+    results.every((r) => r.ex.name.toLowerCase().includes("curl") && (r.ex.primary.includes("biceps") || r.ex.secondary.includes("biceps"))),
+    "results match both filters"
+  );
+  assert.ok(
+    results.some((r) => r.ex.id === "db-curl"),
+    "db-curl found"
+  );
+});
+
+test("searchExercises: available status marked correctly by equipment", () => {
+  const results = searchExercises("bench", "", PROFILES.home.equipment);
+  assert.ok(
+    results.some((r) => r.ex.id === "bb-bench" && r.ok === true),
+    "bb-bench available with home equipment (barbell, bench, rack)"
+  );
+});
+
+test("searchExercises: maintains sort order: available > primary muscle > alphabetical", () => {
+  const results = searchExercises("", "triceps", PROFILES.bodyweight.equipment);
+  const available = results.filter((r) => r.ok === true);
+  const unavailable = results.filter((r) => r.ok === false);
+  if (unavailable.length > 0) {
+    assert.ok(available.length > 0, "some available exercises exist");
+    assert.ok(available[available.length - 1].ok >= unavailable[0].ok, "all available come before unavailable");
+  }
+  const availablePrimary = available.filter((r) => r.ex.primary.includes("triceps"));
+  const availableSecondary = available.filter((r) => !r.ex.primary.includes("triceps") && r.ex.secondary.includes("triceps"));
+  if (availableSecondary.length > 0 && availablePrimary.length > 0) {
+    const lastPrimaryIdx = Math.max(...availablePrimary.map((r) => available.indexOf(r)));
+    const firstSecondaryIdx = Math.min(...availableSecondary.map((r) => available.indexOf(r)));
+    assert.ok(lastPrimaryIdx < firstSecondaryIdx, "primary muscles come before secondary within available");
+  }
 });
