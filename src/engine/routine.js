@@ -2,6 +2,7 @@
 // Coverage, swaps and custom exercises work identically for both, so progression never cares where a session came from.
 import { BY_ID, EXERCISES, MUSCLES, available, credit } from "./exercises.js";
 import { SESSION_CAP } from "./generator.js";
+import { stalled } from "./progression.js";
 
 /** Add the user's own exercises to the lookup (they're stored with the user's data, not in the library). */
 export function registerCustom(list = []) {
@@ -58,6 +59,12 @@ export function alternatives(id, equipment, customs = [], exclude = []) {
   const same = pool.filter((e) => e.pattern === ex.pattern);
   const muscle = pool.filter((e) => e.pattern !== ex.pattern && e.primary.includes(ex.primary[0]));
   return [...same, ...muscle];
+}
+
+/** Suggested swap for a stalled lift: the first like-for-like alternative, or null if the lift isn't stalled or nothing fits. */
+export function suggestSwap(id, history, equipment, customs = [], exclude = []) {
+  if (!BY_ID[id] || !stalled(BY_ID[id], history)) return null;
+  return alternatives(id, equipment, customs, exclude)[0]?.id ?? null;
 }
 
 /** Library search for the routine editor: text and/or muscle; equipment-available exercises first. */
