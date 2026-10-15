@@ -167,3 +167,4 @@ select.inline { width: auto; padding: 4px 8px; display: inline-block; }
 .r-item.unsure .r-name { color: var(--warn); }
 .listening { color: var(--accent); }
 a.btn.wide { margin-top: 8px; }
+.wk { width: 100%; font-size: .84rem; } .wk th { font-weight: 500; color: var(--muted); } .wk td.short { color: var(--warn); }
