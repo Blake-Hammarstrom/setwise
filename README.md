@@ -18,6 +18,7 @@ Or bring your own:
 - swap with like-for-like alternatives, today only or permanently
 - add an exercise, or do a different day
 - the screen stays awake
+- Details: `docs/TODAY.md` explains the Today screen: which day, prefilled numbers, warm-ups, plates and finishing.
 
 **Your own routine:** name days, search the library or create exercises, set sets and rep ranges, reorder. Coverage is checked live, and progression works the same as for generated plans.
 
