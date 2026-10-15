@@ -1,15 +1,14 @@
 // Progress: logged volume vs targets, lift trends, and the full history (editable: mistakes happen mid-set).
-import { BY_ID, MUSCLES, credit } from "../engine/exercises.js";
+import { BY_ID, MUSCLES, MUSCLE_NAMES } from "../engine/exercises.js";
 import { targets } from "../engine/generator.js";
 import { personalBest, sessionBest, stalled } from "../engine/progression.js";
-import { suggestSwap } from "../engine/routine.js";
+import { suggestSwap, weeklySets } from "../engine/routine.js";
 import { exName, historyOf, load, nextIndex, save, sessionsOf } from "./state.js";
 import { $, $$, applyBars, closeSheet, esc, r1, sheet, toast, volumeBars } from "./ui.js";
 
 export function progress(app) {
-  const s = load(), logs = s.logs || [], T = targets(s.profile.experience), since = Date.now() - 7 * 86400000, units = s.profile.units;
-  const doneWeek = Object.fromEntries(MUSCLES.map((m) => [m, 0]));
-  for (const l of logs.filter((l) => Date.parse(l.date) >= since)) for (const it of l.items) if (BY_ID[it.id]) for (const [m, v] of Object.entries(credit(BY_ID[it.id]))) doneWeek[m] += v * it.sets.length;
+  const s = load(), logs = s.logs || [], T = targets(s.profile.experience), units = s.profile.units;
+  const wk = weeklySets(logs, Date.now(), 4), doneWeek = wk[wk.length - 1].sets;
   const ids = [...new Set(logs.flatMap((l) => l.items.map((i) => i.id)))].filter((id) => BY_ID[id]);
   const inRotation = sessionsOf(s).flatMap((d) => d.items.map((i) => i.id));
   const lifts = ids.map((id) => { const ex = BY_ID[id], h = historyOf(s, id); return { id, ex, h, best: h.map((x) => sessionBest(ex, x)), st: stalled(ex, h), swap: suggestSwap(id, h, s.profile.equipment, s.customExercises || [], inRotation) }; })
@@ -19,12 +18,14 @@ export function progress(app) {
     const lo = Math.min(...v), hi = Math.max(...v), W = 120, H = 40;
     return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend over ${v.length} sessions"><path d="${v.map((x, i) => `${i ? "L" : "M"}${((i / (v.length - 1)) * (W - 4) + 2).toFixed(1)},${(H - 4 - ((x - lo) / (hi - lo || 1)) * (H - 8)).toFixed(1)}`).join("")}"/></svg>`;
   };
+  const shortDay = (iso) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
   const weeks = 4, recent = logs.filter((l) => Date.parse(l.date) >= Date.now() - weeks * 7 * 86400000).length;
   const fmtDate = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   app.innerHTML = `
   <h1>Progress</h1>
   <p class="lede">${logs.length ? `${logs.length} session${logs.length === 1 ? "" : "s"} logged · ${recent} in the last ${weeks} weeks (plan: ${s.profile.days * weeks})` : "Finish your first session and your progress shows up here."}</p>
   <section class="card"><h2>Sets per muscle, last 7 days</h2>${volumeBars(doneWeek, T)}<p class="small faint">From what you logged. The shaded band is the weekly target.</p></section>
+  <section class="card"><h2>Last 4 weeks</h2><table class="wk"><tr><th></th>${wk.map((w) => `<th class="num">${esc(shortDay(w.start))}</th>`).join("")}<th class="num">Target</th></tr>${MUSCLES.filter((m) => T[m][1] > 0).map((m) => `<tr><td>${esc(MUSCLE_NAMES[m])}</td>${wk.map((w) => `<td class="num${w.sets[m] < T[m][0] ? " short" : ""}">${esc(String(r1(w.sets[m])))}</td>`).join("")}<td class="num">${esc(`${T[m][0]}–${T[m][1]}`)}</td></tr>`).join("")}</table><p class="small faint">Each column is the week starting on that date, newest last. Amber is below the weekly minimum.</p></section>
   ${lifts.length ? `<section class="card"><h2>Lifts · estimated 1-rep max per session</h2>
     ${lifts.map((l) => { const unloaded = l.ex.load === "bodyweight" && !l.h.at(-1).sets.some((x) => x.w); const first = l.best[0], lastV = l.best.at(-1), pb = personalBest(l.ex, l.h);
       return `<div class="lift"><div><b>${esc(l.ex.name)}</b><div class="small muted">${l.h.length} session${l.h.length === 1 ? "" : "s"}${l.h.length > 1 ? ` · ${lastV >= first ? "+" : ""}${Math.round(lastV - first)}${unloaded ? " reps" : ` ${units}`} since first` : ""}${pb ? ` · best ${Math.round(pb.score)} ${pb.unit === "reps" ? "reps" : esc(units)} on ${esc(new Date(pb.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }))}` : ""}${l.st ? ` · <span class="warn">stalled${l.swap ? `: try ${esc(exName(l.swap))}` : ""}</span>` : ""}</div></div>${spark(l.best)}<div class="num">${Math.round(lastV)}${unloaded ? " reps" : ` ${units}`}</div></div>`; }).join("")}

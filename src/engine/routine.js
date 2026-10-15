@@ -104,3 +104,18 @@ export function warmups(work, inc, minLoad = 0) {
   if (!work) return [];
   return [[0.4, 8], [0.6, 5], [0.8, 3]].map(([f, r]) => ({ w: Math.round((work * f) / inc) * inc, reps: r })).filter((s) => s.w >= minLoad && s.w < work);
 }
+
+/** Logged sets per muscle in `weeks` consecutive 7-day windows, oldest first. A log exactly 7 days old is in the newest window. */
+export function weeklySets(logs, now = Date.now(), weeks = 4) {
+  const WEEK = 7 * 86400000;
+  const out = Array.from({ length: weeks }, (_, i) => ({ start: new Date(now - (weeks - i) * WEEK).toISOString(), sets: Object.fromEntries(MUSCLES.map((m) => [m, 0])) }));
+  for (const l of logs || []) {
+    const t = Date.parse(l.date);
+    if (Number.isNaN(t)) continue;
+    const k = Math.max(0, Math.ceil((now - t) / WEEK) - 1);
+    if (k >= weeks) continue;
+    const sets = out[weeks - 1 - k].sets;
+    for (const it of l.items || []) if (BY_ID[it.id]) for (const [m, v] of Object.entries(credit(BY_ID[it.id]))) sets[m] += v * it.sets.length;
+  }
+  return out;
+}
